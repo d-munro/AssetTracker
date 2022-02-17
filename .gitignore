@@ -1,0 +1,5 @@
+#Spreadsheets
+Spreadsheets/*
+*.xlsx
+*.xls
+*.csv
