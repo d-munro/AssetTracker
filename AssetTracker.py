@@ -2,6 +2,8 @@
 """
 Created on Mon Jan  3 16:30:22 2022
 
+Powered by CoinGecko API
+
 @author: Dylan Munro
 """
 
@@ -29,7 +31,30 @@ class AssetManager:
         
     """
     
-    def __init__(self):
+    _REQUIRED_COLUMNS:Final = {"ticker", "date", "time", "price"}
+    
+    def __init__(self, data):
+        if (data is not None):
+            self._check_column_validity(data)
+            self._generate_assets(data)
+    
+    def _check_column_validity(self, data):
+        required_columns_remaining = self._REQUIRED_COLUMNS
+        for column in data.columns:
+            if column.lower() in self._REQUIRED_COLUMNS:
+                required_columns_remaining.remove(column.lower())
+        if len(required_columns_remaining) > 0:
+            raise ValueError("The spreadsheet is missing several required columns")
+    
+    def _contains_duplicate_columns(self, column_names):
+        parsed_names = set()
+        for column in column_names:
+            if column in parsed_names:
+                return True
+            parsed_names.add(column)
+        return False
+    
+    def _generate_assets(self, data):
         pass
 
 """
@@ -85,7 +110,7 @@ class IO:
     _SUPPORTED_FILES:Final = {".csv", ".xlsx"}
     
     def __init__(self):
-        self._data = None
+        self._manager = None
         
     def get_file_extension(self, file_path):
         """
@@ -118,8 +143,8 @@ class IO:
                 if (not(self.is_yes_no_response(response))):
                     raise ValueError("Please enter yes or no")
                 valid_response = True
-            except ValueError as error:
-                print(error)
+            except ValueError as e:
+                print("{}".format(e))
         return response;
     
     def is_yes_no_response(self, response):
@@ -132,10 +157,11 @@ class IO:
             while not file_loaded:
                 try:
                     file_path = input("Enter the path to the file you wish to load:\n")
-                    self.load_file(file_path)
+                    data = self.load_file(file_path)
+                    self._manager = AssetManager(data)
                     file_loaded = True
                 except (ValueError, FileNotFoundError) as e:
-                    print(e)
+                    print("{}".format(e))
                     response = self.get_yes_no_response("Would you like to try loading a different file? (Yes/No)\n")
                     if response == "no":
                         file_loaded = True
@@ -151,27 +177,22 @@ class IO:
         file_extension = self.get_file_extension(file_path)
         try:
             if file_extension == ".xlsx" or file_extension == ".xls":
-                self._data = pd.read_excel(file_path)
+                data = pd.read_excel(file_path)
             elif file_extension == ".csv":
-                self._data = pd.read_csv(file_path)
+                data = pd.read_csv(file_path)
         except FileNotFoundError:
             raise FileNotFoundError("The file {} does not exist".format(file_path))
+        return data
             
-    
     def main(self):       
         """
         The main method which handles the program control flow
         """
         self.load()
+        #self.data = pd.read_excel("Spreadsheets/demoAssets.xlsx")
         self.run()
     
-    """
-    Parses given csv file for an asset to obtain all relevant information
-    """
-    def parse_file(self, file_name):
-        pass
-    
     def run(self):
-        print(self._data)
+        pass
     
 IO().main()
