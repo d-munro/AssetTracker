@@ -11,6 +11,7 @@ from typing import Final
 from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
 import datetime
+
 import pandas as pd
 
 class AssetManager:
@@ -31,31 +32,46 @@ class AssetManager:
         
     """
     
-    _REQUIRED_COLUMNS:Final = {"ticker", "date", "time", "price"}
+    _REQUIRED_COLUMNS:Final = {"Ticker", "Date", "Time", "Price"}
     
-    def __init__(self, data):
-        if (data is not None):
-            self._check_column_validity(data)
-            self._generate_assets(data)
+    def __init__(self, df):
+        if (df is not None):
+            self._tickers_to_assets = None
+            self._assets_to_graphs = None
+            self._df = df
+            self._capitalize_columns()
+            self._check_column_validity()
+            self._df = self._df.sort_values(["Ticker", "Date", "Time"])
+            #self._generate_assets()
+            print(self._df)
     
-    def _check_column_validity(self, data):
+    def _capitalize_columns(self):
+        capitalized_columns = []
+        for column in self._df.columns:
+            capitalized_columns.append(column.lower().capitalize())
+        self._df.columns = capitalized_columns
+    
+    def _check_column_validity(self):
         required_columns_remaining = self._REQUIRED_COLUMNS
-        for column in data.columns:
-            if column.lower() in self._REQUIRED_COLUMNS:
-                required_columns_remaining.remove(column.lower())
+        for column in self._df.columns:
+            if column in self._REQUIRED_COLUMNS:
+                required_columns_remaining.remove(column)
         if len(required_columns_remaining) > 0:
             raise ValueError("The spreadsheet is missing several required columns")
     
-    def _contains_duplicate_columns(self, column_names):
-        parsed_names = set()
-        for column in column_names:
-            if column in parsed_names:
-                return True
-            parsed_names.add(column)
-        return False
-    
-    def _generate_assets(self, data):
-        pass
+    def _generate_assets(self):
+        ticker, date, time, price = (
+            self._df.columns.get_loc("Ticker"),
+            self._df.columns.get_loc("Date"),
+            self._df.columns.get_loc("Time"),
+            self._df.columns.get_loc("Price")
+         )
+        for row in self._df.rows:
+            ticker_name = self._df[ticker][date]
+            price_entry = (self._df[row][date], self._df[row][time], self._df[row][price])
+            if not ticker_name in self._tickers_to_assets:
+                new_asset = Asset(price_entry)
+                self._tickers_to_assets[ticker_name] = new_asset
 
 """
 Contains all information about an asset
@@ -157,8 +173,8 @@ class IO:
             while not file_loaded:
                 try:
                     file_path = input("Enter the path to the file you wish to load:\n")
-                    data = self.load_file(file_path)
-                    self._manager = AssetManager(data)
+                    df = self.load_file(file_path)
+                    self._manager = AssetManager(df)
                     file_loaded = True
                 except (ValueError, FileNotFoundError) as e:
                     print("{}".format(e))
@@ -177,22 +193,30 @@ class IO:
         file_extension = self.get_file_extension(file_path)
         try:
             if file_extension == ".xlsx" or file_extension == ".xls":
-                data = pd.read_excel(file_path)
+                df = pd.read_excel(file_path)
             elif file_extension == ".csv":
-                data = pd.read_csv(file_path)
+                df = pd.read_csv(file_path)
         except FileNotFoundError:
             raise FileNotFoundError("The file {} does not exist".format(file_path))
-        return data
+        return df
             
     def main(self):       
         """
-        The main method which handles the program control flow
-        """
+        The main method which handles the program control flow        """
         self.load()
-        #self.data = pd.read_excel("Spreadsheets/demoAssets.xlsx")
         self.run()
+    
+    def testing_main(self):
+        """
+        Main program used for testing
+        """        
+        df = pd.read_excel("Spreadsheets/functional.xlsx")
+        try:
+            manager = AssetManager(df)
+        except ValueError as e:
+            print(e)
     
     def run(self):
         pass
     
-IO().main()
+IO().testing_main()
