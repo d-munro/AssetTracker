@@ -14,9 +14,28 @@ import datetime
 
 import pandas as pd
 
-class AssetManager:
+class Manager:
     """
-    Class responsible for driving back-end program execution
+    Processes user requests into direct requests for database
+    """
+    
+    def __init__(self, df):
+        self._data_parser = DataParser(df)
+        self._visible_df = pd.DataFrame(columns=df.columns)
+        
+    def load_asset(self, ticker):
+        try:
+            self._visible_df = self._data_parser.load_entries(self._visible_df, ticker)
+            #print(self._visible_df)
+        except ValueError as e:
+            raise e
+    
+    def get_visible_data(self):
+        return self._visible_df
+
+class DataParser:
+    """
+    Executes Database Operations
     
     (Long Description TODO)
     
@@ -43,7 +62,7 @@ class AssetManager:
             self._check_column_validity()
             self._df = self._df.sort_values(["Ticker", "Date", "Time"])
             #self._generate_assets()
-            print(self._df)
+            #print(self._df)
     
     def _capitalize_columns(self):
         capitalized_columns = []
@@ -59,19 +78,18 @@ class AssetManager:
         if len(required_columns_remaining) > 0:
             raise ValueError("The spreadsheet is missing several required columns")
     
-    def _generate_assets(self):
-        ticker, date, time, price = (
-            self._df.columns.get_loc("Ticker"),
-            self._df.columns.get_loc("Date"),
-            self._df.columns.get_loc("Time"),
-            self._df.columns.get_loc("Price")
-         )
-        for row in self._df.rows:
-            ticker_name = self._df[ticker][date]
-            price_entry = (self._df[row][date], self._df[row][time], self._df[row][price])
-            if not ticker_name in self._tickers_to_assets:
-                new_asset = Asset(price_entry)
-                self._tickers_to_assets[ticker_name] = new_asset
+    def load_entries(self, visible_df, ticker):
+        """
+        Appends all dataframe entries for ticker to the passed dataframe
+        """
+        try:
+            new_entries = self._df.loc[self._df["Ticker"] == ticker]
+            visible_df = pd.concat([new_entries, visible_df])
+            visible_df = visible_df.sort_values(["Ticker", "Date", "Time"])
+            return visible_df
+        except ValueError:
+            message = "".join(ticker).join(" is not currently loaded")
+            raise message
 
 """
 Contains all information about an asset
@@ -174,7 +192,7 @@ class IO:
                 try:
                     file_path = input("Enter the path to the file you wish to load:\n")
                     df = self.load_file(file_path)
-                    self._manager = AssetManager(df)
+                    #self._manager = AssetManager(df)
                     file_loaded = True
                 except (ValueError, FileNotFoundError) as e:
                     print("{}".format(e))
@@ -212,7 +230,15 @@ class IO:
         """        
         df = pd.read_excel("Spreadsheets/functional.xlsx")
         try:
-            manager = AssetManager(df)
+            manager = Manager(df)
+            #entries = manager.get_entries("BTC")
+            #print("Bitcoin entries: \n{}".format(manager.load_asset("BTC")))
+            #manager.get_entries("ETH")
+            #print("Ethereum Entries: \n{}".format(manager.load_asset("ETH")))
+            manager.load_asset("ETH")
+            print(manager.get_visible_data())
+            manager.load_asset("BTC")
+            print(manager.get_visible_data())
         except ValueError as e:
             print(e)
     
