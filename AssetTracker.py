@@ -119,6 +119,26 @@ class DataManager:
         Loads all assets into the visible dataframe
         """
         self._visible_data = self._df
+
+    def get_all_assets(self):
+        """
+        Returns a list of all assets currently loaded in the main dataframe
+        """
+        assets_list = []
+        assets_df = self._df["Ticker"].drop_duplicates()
+        for i in range(len(assets_df)):
+            assets_list.append(assets_df[i])
+        return assets_list
+        
+    def get_visible_assets(self):
+        """
+        Returns a list of all assets currently loaded in the visible dataframe
+        """
+        assets_list = []
+        assets_df = self._visible_data["Ticker"].drop_duplicates()
+        for i in range(len(assets_df)):
+            assets_list.append(assets_df[i])
+        return assets_list
             
     def get_visible_data(self):
         """
@@ -285,8 +305,17 @@ class IO:
             manager.load_entries("BTC", "ETH")
             print("Entries:\n")
             print(manager.get_visible_data())
+            print("Loaded assets: \n")
+            self.print_list(manager.get_visible_assets())
         except ValueError as e:
                 print(e)
+    
+    def print_list(self, ls):
+        """
+        Prints all contents in a list
+        """
+        for item in ls:
+            print("{}".format(item))
     
     def run(self):
         pass
