@@ -14,37 +14,6 @@ import datetime
 
 import pandas as pd
 
-class Manager:
-    """
-    Processes user requests into direct requests for database
-    """
-    
-    def __init__(self, df):
-        self._data_parser = DataManager(df)
-        self._visible_df = pd.DataFrame(columns=df.columns)
-    
-    def hide_asset(self, ticker):
-        """
-        Hides an asset from the visible data frame
-        """
-        try:
-            self._visible_df = self._data_parser.delete_entries()
-        except ValueError as e:
-            raise e
-    
-    def load_asset(self, ticker):
-        """
-        Loads an asset from the DataParser into the visible data frame
-        """
-        try:
-            self._visible_df = self._data_parser.load_entries(self._visible_df, ticker)
-            #print(self._visible_df)
-        except ValueError as e:
-            raise e
-    
-    def get_visible_data(self):
-        return self._data_parser._get_visible_data()
-
 class DataManager:
     """
     Executes Database Operations
@@ -73,8 +42,6 @@ class DataManager:
             self._check_column_validity()
             self._df = self._df.sort_values(["Ticker", "Date", "Time"])
             self._visible_data = pd.DataFrame()
-            #self._generate_assets()
-            #print(self._df)
     
     def _capitalize_columns(self):
         capitalized_columns = []
@@ -97,13 +64,25 @@ class DataManager:
         self._visible_data = pd.DataFrame()
         
     def hide_entry(self, *tickers):
+        """
+        Hides specified tickers from visible database
+        
+        Attributes:
+            tickers - All tickers to hide from the visible database
+        """
         #Tilde (~) is bitwise not operator
         for ticker in tickers:
             self._visible_data = self._visible_data.loc[~(self._visible_data["Ticker"] == ticker)]
     
     def load_entries(self, *tickers):
         """
-        Appends all dataframe entries for ticker to the passed dataframe
+        Loads all associated tickers from the complete dataframe into the visible dataframe
+        
+        Attributes:
+            tickers - All entries to be loaded into the visible dataframe
+            
+        Raises:
+            ValueError - If any tickers are not present in the complete dataframe
         """
         for ticker in tickers:
             try:
@@ -122,13 +101,37 @@ class DataManager:
 
     def get_all_assets(self):
         """
-        Returns a list of all assets currently loaded in the main dataframe
+        Returns a list of all assets currently loaded in the complete dataframe
         """
         assets_list = []
         assets_df = self._df["Ticker"].drop_duplicates()
         for i in range(len(assets_df)):
             assets_list.append(assets_df[i])
         return assets_list
+    
+    def get_all_entries(self, ticker, starting_date = None, ending_date = None):
+        """
+        Returns all entries in visible dataframe for a specific asset formatted
+        as a list of tuples
+        
+        Attributes:
+            ticker (string) - The name of the ticker to return entries for
+            starting_date (string) - The first date that entries should be returned from in format (yyyy-mm-dd)
+            ending_date (string) - The last date that entries should be returned from in format (yyyy-mm-dd)
+            
+        Raises:
+            UserWarning - If the ticker is not loaded in the visible dataframe
+        """
+        entries_df = self._visible_data.loc[self._visible_data["Ticker"] == ticker]
+        #print("In all entires\n{}".format(entries_df))
+        if len(entries_df) == 0:
+            raise UserWarning("Warning: No action taken, {} is not present in the visible dataframe".format(ticker))
+        entries = []
+        for entry in entries_df.itertuples():
+            #print("read {}".format(entry))
+            entries.append(entry)
+        #print("Entries: {}".format(entries))
+        return entries
         
     def get_visible_assets(self):
         """
@@ -136,6 +139,7 @@ class DataManager:
         """
         assets_list = []
         assets_df = self._visible_data["Ticker"].drop_duplicates()
+       # print("df:{}".format(assets_df))
         for i in range(len(assets_df)):
             assets_list.append(assets_df[i])
         return assets_list
@@ -145,10 +149,10 @@ class DataManager:
         Returns the visible dataframe
         
         raises:
-            ValueError if no rows are currently loaded
+            UserWarning - if no rows are currently loaded
         """
         if len(self._visible_data) == 0:
-            raise ValueError("No assets are currently loaded")
+            raise UserWarning("No assets are currently loaded")
         return self._visible_data
 
 """
@@ -242,6 +246,9 @@ class IO:
         return response;
     
     def load(self):
+        """
+        Loads all preliminary data required for program operation
+        """
         file_loaded = False
         response = self.get_yes_no_response("Would you like to load an excel file? (Yes/No)\n")
         if response.lower() == "yes":
@@ -260,6 +267,10 @@ class IO:
     
     def load_file(self, file_path):
         """
+        Attempts to load the file at the given filepath
+        
+        Attributes:
+            file_path - The path to the file
         
         raises:
             ValueError: If the file being loaded is not supported
@@ -277,13 +288,14 @@ class IO:
             
     def main(self):       
         """
-        The main method which handles the program control flow        """
+        The main method which handles the program control flow
+        """
         self.load()
         self.run()
     
-    def testing_main(self):
+    def data_manager_tests(self):
         """
-        Main program used for testing
+        Method used to test the DataManager class
         """        
         df = pd.read_excel("Spreadsheets/functional.xlsx")
         try:
@@ -307,17 +319,29 @@ class IO:
             print(manager.get_visible_data())
             print("Loaded assets: \n")
             self.print_list(manager.get_visible_assets())
+            print("\n")
+            entries = manager.get_all_entries("BTC")
+            print("Entries main: {}".format(entries))
+            self.print_tuples_list(entries)
+            #print("Visible entries for BTC:\n{}".format(self.print_list(manager.get_all_entries("BTC"))))
         except ValueError as e:
                 print(e)
     
     def print_list(self, ls):
         """
-        Prints all contents in a list
+        Prints all contents in a list not containing tuples
         """
+        print("Entires print: {}".format(ls))
         for item in ls:
             print("{}".format(item))
-    
+        #print("\n")
+        
+    def print_tuples_list(self, ls):
+        for item in ls:
+            index, ticker, date, time, price = item
+            print("{0} {1} {2} {3}".format(ticker, date, time, price))
+        
     def run(self):
         pass
     
-IO().testing_main()
+IO().data_manager_tests()
