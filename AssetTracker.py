@@ -20,10 +20,22 @@ class Manager:
     """
     
     def __init__(self, df):
-        self._data_parser = DataParser(df)
+        self._data_parser = DataManager(df)
         self._visible_df = pd.DataFrame(columns=df.columns)
-        
+    
+    def hide_asset(self, ticker):
+        """
+        Hides an asset from the visible data frame
+        """
+        try:
+            self._visible_df = self._data_parser.delete_entries()
+        except ValueError as e:
+            raise e
+    
     def load_asset(self, ticker):
+        """
+        Loads an asset from the DataParser into the visible data frame
+        """
         try:
             self._visible_df = self._data_parser.load_entries(self._visible_df, ticker)
             #print(self._visible_df)
@@ -31,9 +43,9 @@ class Manager:
             raise e
     
     def get_visible_data(self):
-        return self._visible_df
+        return self._data_parser._get_visible_data()
 
-class DataParser:
+class DataManager:
     """
     Executes Database Operations
     
@@ -55,12 +67,12 @@ class DataParser:
     
     def __init__(self, df):
         if (df is not None):
-            self._tickers_to_assets = None
             self._assets_to_graphs = None
             self._df = df
             self._capitalize_columns()
             self._check_column_validity()
             self._df = self._df.sort_values(["Ticker", "Date", "Time"])
+            self._visible_data = pd.DataFrame()
             #self._generate_assets()
             #print(self._df)
     
@@ -77,19 +89,47 @@ class DataParser:
                 required_columns_remaining.remove(column)
         if len(required_columns_remaining) > 0:
             raise ValueError("The spreadsheet is missing several required columns")
+            
+    def hide_all(self):
+        """
+        Hides all entries from the visible dataframe
+        """
+        self._visible_data = pd.DataFrame()
+        
+    def hide_entry(self, *tickers):
+        #Tilde (~) is bitwise not operator
+        for ticker in tickers:
+            self._visible_data = self._visible_data.loc[~(self._visible_data["Ticker"] == ticker)]
     
-    def load_entries(self, visible_df, ticker):
+    def load_entries(self, *tickers):
         """
         Appends all dataframe entries for ticker to the passed dataframe
         """
-        try:
-            new_entries = self._df.loc[self._df["Ticker"] == ticker]
-            visible_df = pd.concat([new_entries, visible_df])
-            visible_df = visible_df.sort_values(["Ticker", "Date", "Time"])
-            return visible_df
-        except ValueError:
-            message = "".join(ticker).join(" is not currently loaded")
-            raise message
+        for ticker in tickers:
+            try:
+                new_entry = self._df.loc[self._df["Ticker"] == ticker]
+                self._visible_data = pd.concat([new_entry, self._visible_data])
+            except ValueError:
+                message = "".join(ticker).join(" is not currently loaded. Loading entries cancelled")
+                raise message             
+        self._visible_data = self._visible_data.sort_values(["Ticker", "Date", "Time"])  
+            
+    def load_all(self):
+        """
+        Loads all assets into the visible dataframe
+        """
+        self._visible_data = self._df
+            
+    def get_visible_data(self):
+        """
+        Returns the visible dataframe
+        
+        raises:
+            ValueError if no rows are currently loaded
+        """
+        if len(self._visible_data) == 0:
+            raise ValueError("No assets are currently loaded")
+        return self._visible_data
 
 """
 Contains all information about an asset
@@ -174,15 +214,12 @@ class IO:
         while not valid_response:
             try:               
                 response = input(prompt)
-                if (not(self.is_yes_no_response(response))):
+                if (not(response.lower() == "yes" or response.lower() == "no")):
                     raise ValueError("Please enter yes or no")
                 valid_response = True
             except ValueError as e:
                 print("{}".format(e))
         return response;
-    
-    def is_yes_no_response(self, response):
-        return response.lower() == "yes" or response.lower() == "no"
     
     def load(self):
         file_loaded = False
@@ -230,17 +267,26 @@ class IO:
         """        
         df = pd.read_excel("Spreadsheets/functional.xlsx")
         try:
-            manager = Manager(df)
+            manager = DataManager(df)
             #entries = manager.get_entries("BTC")
             #print("Bitcoin entries: \n{}".format(manager.load_asset("BTC")))
             #manager.get_entries("ETH")
             #print("Ethereum Entries: \n{}".format(manager.load_asset("ETH")))
-            manager.load_asset("ETH")
+            #manager.load_entries("ETH")
+            #manager.load_entries("BTC")
+            manager.load_all()
             print(manager.get_visible_data())
-            manager.load_asset("BTC")
+            #manager.hide_all()
+            #print(manager.get_visible_data())
+            manager.hide_entry("BTC", "ETH")
+            #manager.delete_asset("BTC")
+            print("Entries:\n")
+            #print(manager.get_visible_data())
+            manager.load_entries("BTC", "ETH")
+            print("Entries:\n")
             print(manager.get_visible_data())
         except ValueError as e:
-            print(e)
+                print(e)
     
     def run(self):
         pass
