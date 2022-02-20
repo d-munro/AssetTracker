@@ -5,7 +5,8 @@ Created on Sat Feb 19 12:32:04 2022
 @author: Dylan Munro
 """
 
-import src.managers.datamanager as dm
+import src.assets.manager as dm
+import tests.data_test
 
 from typing import Final
 from pycoingecko import CoinGeckoAPI
@@ -81,7 +82,6 @@ class IO:
                     response = self.get_yes_no_response("Would you like to try loading a different file? (Yes/No)\n")
                     if response == "no":
                         file_loaded = True
-        self.run()
     
     def load_file(self, file_path):
         """
@@ -108,11 +108,40 @@ class IO:
         """
         The main method which handles the program control flow
         """
-        self.load()
+        #self.load()
+        self._manager = dm.DataManager(self.load_file("resources/spreadsheets/functional.xlsx"))
         self.run()
         
     def run(self):
-        pass
+        terminate_program = False
+        user_response = 0
+        prompt = self.get_prompt()
+        while not user_response == dm.Request.QUIT:
+            try:
+                user_response = int(input(prompt))
+                if ((user_response < dm.Request.MIN_REQUEST_VALUE) 
+                    or (user_response > dm.Request.MAX_REQUEST_VALUE)):
+                    raise ValueError
+                
+            except ValueError:
+                print("Please enter a valid number")
+        print("Thank you for using asset tracker")
+    
+    def get_prompt(self):
+        """
+        Returns all valid requests and their descriptions
+        """
+        requests = dm.Request.get_VALID_REQUESTS()
+        key_list = list(requests.keys())
+        temp = [""]
+        for i in key_list:
+            index = i + 1 #User can enter numbers starting at 1, so must lookup 1 higher than i
+            temp.append("Press ")
+            temp.append(str(i))
+            temp.append(" to ")
+            temp.append(requests[i])
+            temp.append("\n")
+        return "".join(temp)
 
 if __name__ == "__main__":
     IO().main()

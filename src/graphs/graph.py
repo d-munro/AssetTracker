@@ -12,15 +12,21 @@ Contains all methods for plotting graphs of the specified ticker
 """
 class Graph:
     
-    """
-    params:
-        asset: the Asset object containing all relevant information for the graph
-    """
-    def __init__(self):
-        pass
+    def __init__(self, data_set):
+        """
+        Attributes:
+            data_set - The dataframe containing the relevant asset information
+        """
+        self._data_set = data_set
+
+    def plot(self, asset):
+        """
+        Creates a plot of the specified asset data
         
-    """
-    Plots the last 50 days of the closing price for the specified asset
-    """
-    def plot_asset(self):
+        Attributes:
+            asset - The asset within the data set to be plotted
+        """
         pass
+
+        
+    

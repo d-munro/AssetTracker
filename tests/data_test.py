@@ -5,15 +5,16 @@ Created on Sat Feb 19 10:02:19 2022
 @author: dylmu
 """
 
-import src.managers.datamanager as dm
+import src.assets.manager as dm
+import src.graphs.graph
 
 import pandas as pd
 
 def data_manager_tests():
     """
-    Method used to test the DataManager class
+    Function used to test the DataManager class
     """        
-    df = pd.read_excel("../resources/spreadsheets/functional.xlsx")
+    df = pd.read_excel("resources/spreadsheets/functional.xlsx")
     try:
         manager = dm.DataManager(df)
         #entries = manager.get_entries("BTC")
@@ -42,6 +43,18 @@ def data_manager_tests():
         #print("Visible entries for BTC:\n{}".format(self.print_list(manager.get_all_entries("BTC"))))
     except ValueError as e:
         print(e)
+        
+def graph_tests():
+    """
+    Function used to test graph functionality
+    """
+    df = pd.read_excel("resources/spreadsheets/functional.xlsx")
+    try:
+        manager = dm.DataManager(df)
+        manager.load_entries("BTC")
+        graph = src.graphs.graph.Graph(manager.get_visible_data())
+    except ValueError as e:
+        print(e)
     
 def print_list(ls):
     """
@@ -56,6 +69,4 @@ def print_tuples_list(ls):
     for item in ls:
         index, ticker, date, time, price = item
         print("{0} {1} {2} {3}".format(ticker, date, time, price))
-
-if __name__ == "__main__":    
-    data_manager_tests()
+        

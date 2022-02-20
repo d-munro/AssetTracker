@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+
+Contains all classes responsible for managing, processing, and storing information
+about various assets
+
 Created on Mon Jan  3 16:30:22 2022
 
 Powered by CoinGecko API
@@ -14,9 +18,85 @@ import datetime
 
 import pandas as pd
 
+class Request:
+    """
+    Ensures that user input is syntactically correct before passing to AssetManager
+    """
+    
+    DISPLAY_ASSETS:Final = 1
+    DISPLAY_VISIBLE_ASSETS:Final = 2
+    LOAD_ASSET:Final = 3
+    LOAD_ALL_ASSETS:Final = 4
+    HIDE_ASSET:Final = 5
+    HIDE_ALL_ASSETS:Final = 6
+    PLOT_ASSET:Final = 7
+    QUIT:Final = 8
+    
+    MIN_REQUEST_VALUE:Final = DISPLAY_ASSETS #Smallest int value of possible requests
+    MAX_REQUEST_VALUE:Final = QUIT #Largest int value of possible requests
+    
+    #dictionary of all valid requests mapped to their descriptions
+    _VALID_REQUESTS:Final = {
+            DISPLAY_ASSETS: "display assets",
+            DISPLAY_VISIBLE_ASSETS: "display currently loaded visible assets",
+            LOAD_ASSET: "load an asset into the visible dataframe",
+            LOAD_ALL_ASSETS: "load all assets into the visible dataframe",
+            HIDE_ASSET: "hide an asset currently in the visible dataframe from sight",
+            HIDE_ALL_ASSETS: "hide all assets currently in the visible dataframe from sight",
+            PLOT_ASSET: "plot a chart of a loaded asset",
+            QUIT: "terminate the program"
+        }
+    
+    #set of all requests which can function without an asset to act upon
+    _REQUESTS_NO_ASSETS:Final = {DISPLAY_ASSETS, DISPLAY_VISIBLE_ASSETS,
+                                  LOAD_ALL_ASSETS, HIDE_ALL_ASSETS, QUIT}
+    
+    
+    def __init__(self, request, asset=None):
+        """
+        Attributes:
+            request - The integer representing the user request from _VALID_REQUESTS
+            obj - The asset which the request is acting upon
+        
+        Raises:
+            ValueError - If the request is not recognized
+        """
+        if request not in Request._VALID_REQUESTS:
+            raise ValueError("Please enter the number of a valid request")
+        if (request not in Request._REQUESTS_NO_OBJECTS) and (asset == None):
+            raise ValueError("That request requires an asset")
+        self._request = request
+        self._asset = asset
+        self._requires_asset = not request in Request._REQUESTS_NO_ASSETS
+    
+    def get_request(self):
+        return self._request
+    
+    def get_asset(self):
+        return self._asset
+    
+    def get_requires_asset(self):
+        """
+        Returns true if request requires an asset to act upon
+        """
+        return self._requires_asset
+        
+    @staticmethod
+    def get_REQUESTS_NO_ASSETS():
+        return Request._REQUESTS_NO_ASSETS
+    
+    @staticmethod
+    def get_VALID_REQUESTS():
+        return Request._VALID_REQUESTS
+    
+class AssetManager:
+    """
+    Responsible for communication between the front and back ends of the program
+    """
+
 class DataManager:
     """
-    Executes Database Operations
+    Responsible for directly retrieving data from the complete dataframe
     
     (Long Description TODO)
     
@@ -154,5 +234,3 @@ class DataManager:
         if len(self._visible_data) == 0:
             raise UserWarning("No assets are currently loaded")
         return self._visible_data
-    
-#get_price(ticker, datetime.datetime(year, month, day, hour, minute, second))
