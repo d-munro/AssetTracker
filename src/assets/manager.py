@@ -217,14 +217,15 @@ class Driver:
         Returns:
             String or Dataframe containing the result of the request
         """
-        print("read")
         switch = {
-            Request.DISPLAY_ASSET_NAMES : self._execute_display_asset_names_request(),
-            Request.DISPLAY_VISIBLE_ASSETS : self._execute_display_visible_assets_request(request),
+            #Request.DISPLAY_ALL_ASSET_NAMES : self._execute_display_all_asset_names_request(),
+            #Request.DISPLAY_VISIBLE_ASSET_NAMES : self._execute_display_visible_asset_names_request(),
+            #Request.DISPLAY_VISIBLE_ASSETS : self._execute_display_visible_assets_request(request),
+            #Request.DISPLAY_ALL_VISIBLE_ASSETS : self._execute_display_all_visible_assets_request(request),
+            #Request.HIDE_ASSETS : self._execute_hide_assets_request(request),
             #Request.HIDE_ALL_ASSETS : self._execute_hide_all_assets_request(),
-            Request.HIDE_ASSETS : self._execute_hide_assets_request(request),
-            #Request.LOAD_ALL_ASSETS : self._execute_load_all_assets_request(),
             #Request.LOAD_ASSETS : self._execute_load_assets_request(request),
+            #Request.LOAD_ALL_ASSETS : self._execute_load_all_assets_request(),
             #Request.PLOT_ASSETS : self._execute_plot_asset_request(request),
             Request.QUIT : self._execute_quit_request()
         }
@@ -238,32 +239,36 @@ class Request:
     Ensures that user input is syntactically correct before passing to AssetManager
     """
     
-    DISPLAY_ASSET_NAMES:Final = 1
-    DISPLAY_VISIBLE_ASSETS:Final = 2
-    LOAD_ASSETS:Final = 3
-    LOAD_ALL_ASSETS:Final = 4
+    DISPLAY_ALL_ASSET_NAMES:Final = 1
+    DISPLAY_VISIBLE_ASSET_NAMES:Final = 2
+    DISPLAY_VISIBLE_ASSETS:Final = 3
+    DISPLAY_ALL_VISIBLE_ASSETS:Final = 4
     HIDE_ASSETS:Final = 5
     HIDE_ALL_ASSETS:Final = 6
-    PLOT_ASSETS:Final = 7
-    QUIT:Final = 8
+    LOAD_ASSETS:Final = 7
+    LOAD_ALL_ASSETS:Final = 8
+    PLOT_ASSETS:Final = 9
+    QUIT:Final = 10
     
-    MIN_REQUEST_VALUE:Final = DISPLAY_ASSET_NAMES #Smallest int value of possible requests
-    MAX_REQUEST_VALUE:Final = QUIT #Largest int value of possible requests
+    _SMALLEST_VALUE:Final = DISPLAY_ALL_ASSET_NAMES #Smallest int value of possible requests
+    _LARGEST_VALUE:Final = QUIT #Largest int value of possible requests
     
     #dictionary of all valid requests mapped to their descriptions
     _VALID_REQUESTS:Final = {
-            DISPLAY_ASSET_NAMES: "display the names of all assets loaded into the program (including non-visible assets)",
-            DISPLAY_VISIBLE_ASSETS: "display currently loaded visible assets",
-            LOAD_ASSETS: "load assets into the visible dataframe",
-            LOAD_ALL_ASSETS: "load all assets into the visible dataframe",
+            DISPLAY_ALL_ASSET_NAMES: "display the names of all assets loaded into the program (including non-visible assets)",
+            DISPLAY_VISIBLE_ASSETS: "select the name of a loaded visible asset to display",
+            DISPLAY_ALL_VISIBLE_ASSETS: "display all currently loaded visible assets",
             HIDE_ASSETS: "hide assets currently in the visible dataframe from sight",
             HIDE_ALL_ASSETS: "hide all assets currently in the visible dataframe from sight",
+            LOAD_ASSETS: "load assets into the visible dataframe",
+            LOAD_ALL_ASSETS: "load all assets into the visible dataframe",
             PLOT_ASSETS: "plot a chart of specified loaded assets",
             QUIT: "terminate the program"
         }
     
     #set of all requests which can function without an asset to act upon
-    _REQUESTS_NO_ASSETS:Final = {DISPLAY_ASSET_NAMES, DISPLAY_VISIBLE_ASSETS,
+    _REQUESTS_NO_ASSETS:Final = {DISPLAY_ALL_ASSET_NAMES, DISPLAY_VISIBLE_ASSET_NAMES,
+                                 DISPLAY_ALL_VISIBLE_ASSETS,
                                   LOAD_ALL_ASSETS, HIDE_ALL_ASSETS, QUIT}
     
     
@@ -288,6 +293,20 @@ class Request:
     
     def get_assets(self):
         return self._assets
+    
+    @staticmethod
+    def get_smallest_value():
+        """
+        Returns the smallest int that maps to a request
+        """
+        return Request._SMALLEST_VALUE
+    
+    @staticmethod
+    def get_largest_value():
+        """
+        Returns the largest int that maps to a request
+        """
+        return Request._LARGEST_VALUE
         
     @staticmethod
     def get_REQUESTS_NO_ASSETS():
@@ -296,3 +315,16 @@ class Request:
     @staticmethod
     def get_VALID_REQUESTS():
         return Request._VALID_REQUESTS
+
+    @staticmethod
+    def is_valid_value(value):
+        """
+        Determines if a request value is between the smallest and largest numbers
+        which map to a request
+        
+        Returns:
+            True - If the value is between the smallest and largest request numbers
+            False - If the value is not between the smallest and largest request numbers
+        """
+        return (value >= Request._SMALLEST_VALUE and value <= Request._LARGEST_VALUE)
+        

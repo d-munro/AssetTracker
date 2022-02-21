@@ -7,8 +7,8 @@ Contains all classes dealing with front-end program interaction
 @author: Dylan Munro
 """
 
-import src.assets.manager as manage
-import tests.data_test
+import src.assets.manager as manager
+#import tests.datatest as dt
 
 from typing import Final
 
@@ -74,7 +74,7 @@ class IO:
                 try:
                     file_path = input("Enter the path to the file you wish to load:\n")
                     df = self.load_file(file_path)
-                    self._driver = manage.Driver(df)
+                    self._driver = manager.Driver(df)
                     file_loaded = True
                 except (ValueError, FileNotFoundError) as e:
                     print("{}".format(e))
@@ -108,14 +108,14 @@ class IO:
         The main method which handles the program control flow
         """
         #self.load()
-        self._driver = manage.Driver(self.load_file("resources/spreadsheets/functional.xlsx"))
+        self._driver = manager.Driver(self.load_file("resources/spreadsheets/functional.xlsx"))
         self.run()
         
     def run(self):
         user_num = 0
         prompt = self.get_prompt()
-        assetless_requests = manage.Request.get_REQUESTS_NO_ASSETS()
-        while not user_num == manage.Request.QUIT:
+        assetless_requests = manager.Request.get_REQUESTS_NO_ASSETS()
+        while not user_num == manager.Request.QUIT:
             try:
                 #Name of the asset that the request is acting on
                 asset_name = None
@@ -125,16 +125,16 @@ class IO:
                 if not response.isnumeric():
                     raise ValueError("Please enter an integer")
                 user_num = int(response)
-                if ((user_num < manage.Request.MIN_REQUEST_VALUE) 
-                    or (user_num > manage.Request.MAX_REQUEST_VALUE)):
+                if not manager.Request.is_valid_value(user_num):
                     raise ValueError("Please enter an integer between {} and {}"
-                                         .format(manage.Request.MIN_REQUEST_VALUE, manage.REQUEST.MAX_REQUEST_VALUE))
+                                         .format(manager.Request.get_smallest_value(), 
+                                                 manager.Request.get_largest_value()))
                     
                 #Obtain name of asset request is acting on if necessary
                 if not user_num in assetless_requests:
                     asset_name = input("Enter the name of the asset:\n")
                     
-                request = manage.Request(user_num, asset_name)
+                request = manager.Request(user_num, asset_name)
                 print(self._driver.execute_request(request))
             except (ValueError, UserWarning) as e:
                 print(e)
@@ -143,7 +143,7 @@ class IO:
         """
         Returns all valid requests and their descriptions
         """
-        requests = manage.Request.get_VALID_REQUESTS()
+        requests = manager.Request.get_VALID_REQUESTS()
         key_list = list(requests.keys())
         temp = [""]
         for i in key_list:
