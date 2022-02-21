@@ -1,7 +1,7 @@
 #Spreadsheets
-Spreadsheets/*
-*.xlsx
-*.xls
-*.csv
+#Spreadsheets/*
+#*.xlsx
+#*.xls
+#*.csv
 
 *__pycache__

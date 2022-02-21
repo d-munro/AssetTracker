@@ -53,7 +53,7 @@ def graph_tests():
         manager = dm.DataManager(df)
         manager.load_all()
         graph = src.graphs.graph.Graph(manager.get_visible_data())
-        graph.plot("ETH")
+        graph.plot("BTC")
     except ValueError as e:
         print(e)
     

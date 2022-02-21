@@ -29,14 +29,14 @@ class Graph:
             ticker - The asset within the data set to be plotted
         """
         points = self._data_set.loc[self._data_set["Ticker"] == ticker]
-        title = ticker
+        title = ticker + " price history"
         prices = []
         times = []
         for index, ticker, date, time, price in points.itertuples():
             prices.append(price)
             times.append(dt.datetime.combine(date, time))
         plt.plot_date(times, prices)
-        plt.title(ticker)
+        plt.title(ticker + " Price History")
         plt.xlabel("Date and Time")
         plt.xticks(rotation=30, ha='right')
         plt.ylabel("Price")
