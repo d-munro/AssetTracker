@@ -63,7 +63,7 @@ class Request:
         """
         if request not in Request._VALID_REQUESTS:
             raise ValueError("Please enter the number of a valid request")
-        if (request not in Request._REQUESTS_NO_OBJECTS) and (asset == None):
+        if (request not in Request._REQUESTS_NO_ASSETS) and (asset == None):
             raise ValueError("That request requires an asset")
         self._request = request
         self._asset = asset
@@ -89,10 +89,51 @@ class Request:
     def get_VALID_REQUESTS():
         return Request._VALID_REQUESTS
     
-class AssetManager:
+class Driver:
     """
     Responsible for communication between the front and back ends of the program
     """
+    
+    def __init__(self, df):
+        self._manager = DataManager(df)
+        self._visible_data = pd.DataFrame()
+        
+    def _execute_display_asset_request(self, request):
+        pass
+    
+    def _execute_display_visible_asset_request(self, request):
+        pass
+    
+    def _execute_hide_all_assets_request(self, request):
+        pass
+    
+    def _execute_hide_asset_request(self, request):
+        pass
+    
+    def _execute_load_all_assets_request(self, request):
+        pass
+    
+    def _execute_load_asset_request(self, request):
+        pass
+    
+    def _execute_plot_asset_request(self, request):
+        pass
+    
+    def _execute_quit_request(self, request):
+        return "Thank you for using the asset tracker"
+        
+    def execute_request(self, request):
+        switch = {
+            Request.DISPLAY_ASSETS : self._execute_display_asset_request(request),
+            Request.DISPLAY_VISIBLE_ASSETS : self._execute_display_visible_asset_request(request),
+            Request.HIDE_ALL_ASSETS : self._execute_hide_all_assets_request(request),
+            Request.HIDE_ASSET : self._execute_hide_asset_request(request),
+            Request.LOAD_ALL_ASSETS : self._execute_load_all_assets_request(request),
+            Request.LOAD_ASSET : self._execute_load_asset_request(request),
+            Request.PLOT_ASSET : self._execute_plot_asset_request(request),
+            Request.QUIT : self._execute_quit_request(request)
+        }
+        return switch.get(request.get_request())
 
 class DataManager:
     """

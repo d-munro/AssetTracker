@@ -5,13 +5,10 @@ Created on Sat Feb 19 12:32:04 2022
 @author: Dylan Munro
 """
 
-import src.assets.manager as dm
+import src.assets.manager as manage
 import tests.data_test
 
 from typing import Final
-from pycoingecko import CoinGeckoAPI
-cg = CoinGeckoAPI()
-import datetime
 
 import pandas as pd
 
@@ -27,7 +24,7 @@ class IO:
     _SUPPORTED_FILES:Final = {".csv", ".xlsx"}
     
     def __init__(self):
-        self._manager = None
+        self._driver = None
         
     def get_file_extension(self, file_path):
         """
@@ -75,7 +72,7 @@ class IO:
                 try:
                     file_path = input("Enter the path to the file you wish to load:\n")
                     df = self.load_file(file_path)
-                    self._manager = dm.DataManager(df)
+                    self._driver = manage.Driver(df)
                     file_loaded = True
                 except (ValueError, FileNotFoundError) as e:
                     print("{}".format(e))
@@ -109,33 +106,40 @@ class IO:
         The main method which handles the program control flow
         """
         #self.load()
-        self._manager = dm.DataManager(self.load_file("resources/spreadsheets/functional.xlsx"))
+        self._driver = manage.Driver(self.load_file("resources/spreadsheets/functional.xlsx"))
         self.run()
         
     def run(self):
-        terminate_program = False
         user_response = 0
         prompt = self.get_prompt()
-        while not user_response == dm.Request.QUIT:
+        assetless_requests = manage.Request.get_REQUESTS_NO_ASSETS()
+        while not user_response == manage.Request.QUIT:
             try:
-                user_response = int(input(prompt))
-                if ((user_response < dm.Request.MIN_REQUEST_VALUE) 
-                    or (user_response > dm.Request.MAX_REQUEST_VALUE)):
-                    raise ValueError
+                #Name of the asset that the request is acting on
+                asset_name = None
                 
+                user_response = int(input(prompt))
+                if ((user_response < manage.Request.MIN_REQUEST_VALUE) 
+                    or (user_response > manage.Request.MAX_REQUEST_VALUE)):
+                    raise ValueError
+                    
+                #Obtain name of asset request is acting on if necessary
+                if not user_response in assetless_requests:
+                    asset_name = input("Enter the name of the asset:\n")
+                    
+                request = manage.Request(user_response, asset_name)
+                print(self._driver.execute_request(request))
             except ValueError:
                 print("Please enter a valid number")
-        print("Thank you for using asset tracker")
     
     def get_prompt(self):
         """
         Returns all valid requests and their descriptions
         """
-        requests = dm.Request.get_VALID_REQUESTS()
+        requests = manage.Request.get_VALID_REQUESTS()
         key_list = list(requests.keys())
         temp = [""]
         for i in key_list:
-            index = i + 1 #User can enter numbers starting at 1, so must lookup 1 higher than i
             temp.append("Press ")
             temp.append(str(i))
             temp.append(" to ")
@@ -144,5 +148,5 @@ class IO:
         return "".join(temp)
 
 if __name__ == "__main__":
-    #IO().main()
-    tests.data_test.graph_tests()
+    IO().main()
+    #tests.data_test.graph_tests()
