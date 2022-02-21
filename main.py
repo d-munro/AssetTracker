@@ -8,7 +8,7 @@ Contains all classes dealing with front-end program interaction
 """
 
 import src.assets.manager as manager
-#import tests.datatest as dt
+import tests.tests as tests
 
 from typing import Final
 
@@ -155,5 +155,5 @@ class IO:
         return "".join(temp)
 
 if __name__ == "__main__":
-    IO().main()
-    #tests.data_test.graph_tests()
+    #IO().main()
+    tests.graph_tests()

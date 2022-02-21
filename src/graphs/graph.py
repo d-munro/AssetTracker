@@ -40,7 +40,7 @@ class Graph:
         plt.xlabel("Date and Time")
         plt.xticks(rotation=30, ha='right')
         plt.ylabel("Price")
-        plt.locator_params(axis="x", nbins=4)
+        #plt.locator_params(axis="x", nbins=4)
         plt.show()
         #print(points)
 

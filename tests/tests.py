@@ -5,8 +5,8 @@ Created on Sat Feb 19 10:02:19 2022
 @author: dylmu
 """
 
-import src.assets.manager as dm
-import src.graphs.graph
+import src.assets.manager as manager
+import src.graphs.graph as graph
 
 import pandas as pd
 
@@ -16,31 +16,31 @@ def data_manager_tests():
     """        
     df = pd.read_excel("resources/spreadsheets/functional.xlsx")
     try:
-        manager = dm.DataManager(df)
-        #entries = manager.get_entries("BTC")
-        #print("Bitcoin entries: \n{}".format(manager.load_asset("BTC")))
-        #manager.get_entries("ETH")
-        #print("Ethereum Entries: \n{}".format(manager.load_asset("ETH")))
-        #manager.load_entries("ETH")
-        #manager.load_entries("BTC")
-        manager.load_all()
-        print(manager.get_visible_data())
-        #manager.hide_all()
-        #print(manager.get_visible_data())
-        manager.hide_entry("BTC", "ETH")
-        #manager.delete_asset("BTC")
+        dm = manager.DataManager(df)
+        #entries = dm.get_entries("BTC")
+        #print("Bitcoin entries: \n{}".format(dm.load_asset("BTC")))
+        #dm.get_entries("ETH")
+        #print("Ethereum Entries: \n{}".format(dm.load_asset("ETH")))
+        #dm.load_entries("ETH")
+        #dm.load_entries("BTC")
+        dm.load_all()
+        print(dm.get_visible_data())
+        #dm.hide_all()
+        #print(dm.get_visible_data())
+        dm.hide_entry("BTC", "ETH")
+        #dm.delete_asset("BTC")
         print("Entries:\n")
-        #print(manager.get_visible_data())
-        manager.load_entries("BTC", "ETH")
+        #print(dm.get_visible_data())
+        dm.load_entries("BTC", "ETH")
         print("Entries:\n")
-        print(manager.get_visible_data())
+        print(dm.get_visible_data())
         print("Loaded assets: \n")
-        print_list(manager.get_visible_assets())
+        print_list(dm.get_visible_assets())
         print("\n")
-        entries = manager.get_all_entries("BTC")
+        entries = dm.get_all_entries("BTC")
         print("Entries main: {}".format(entries))
         print_tuples_list(entries)
-        #print("Visible entries for BTC:\n{}".format(self.print_list(manager.get_all_entries("BTC"))))
+        #print("Visible entries for BTC:\n{}".format(self.print_list(dm.get_all_entries("BTC"))))
     except ValueError as e:
         print(e)
         
@@ -50,10 +50,11 @@ def graph_tests():
     """
     df = pd.read_excel("resources/spreadsheets/functional.xlsx")
     try:
-        manager = dm.DataManager(df)
-        manager.load_all()
-        graph = src.graphs.graph.Graph(manager.get_visible_data())
-        graph.plot("BTC")
+        dm = manager.DataManager(df)
+        dm.load_all()
+        my_graph = graph.Graph(dm.get_visible_data())
+        my_graph.plot("BTC")
+        my_graph.plot("ETH")
     except ValueError as e:
         print(e)
     
