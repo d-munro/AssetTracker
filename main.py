@@ -2,6 +2,8 @@
 """
 Created on Sat Feb 19 12:32:04 2022
 
+Contains all classes dealing with front-end program interaction
+
 @author: Dylan Munro
 """
 
@@ -110,27 +112,32 @@ class IO:
         self.run()
         
     def run(self):
-        user_response = 0
+        user_num = 0
         prompt = self.get_prompt()
         assetless_requests = manage.Request.get_REQUESTS_NO_ASSETS()
-        while not user_response == manage.Request.QUIT:
+        while not user_num == manage.Request.QUIT:
             try:
                 #Name of the asset that the request is acting on
                 asset_name = None
                 
-                user_response = int(input(prompt))
-                if ((user_response < manage.Request.MIN_REQUEST_VALUE) 
-                    or (user_response > manage.Request.MAX_REQUEST_VALUE)):
-                    raise ValueError
+                #Check if user enters a valid number
+                response = input(prompt)
+                if not response.isnumeric():
+                    raise ValueError("Please enter an integer")
+                user_num = int(response)
+                if ((user_num < manage.Request.MIN_REQUEST_VALUE) 
+                    or (user_num > manage.Request.MAX_REQUEST_VALUE)):
+                    raise ValueError("Please enter an integer between {} and {}"
+                                         .format(manage.Request.MIN_REQUEST_VALUE, manage.REQUEST.MAX_REQUEST_VALUE))
                     
                 #Obtain name of asset request is acting on if necessary
-                if not user_response in assetless_requests:
+                if not user_num in assetless_requests:
                     asset_name = input("Enter the name of the asset:\n")
                     
-                request = manage.Request(user_response, asset_name)
+                request = manage.Request(user_num, asset_name)
                 print(self._driver.execute_request(request))
-            except ValueError:
-                print("Please enter a valid number")
+            except (ValueError, UserWarning) as e:
+                print(e)
     
     def get_prompt(self):
         """
