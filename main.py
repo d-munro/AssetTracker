@@ -144,4 +144,5 @@ class IO:
         return "".join(temp)
 
 if __name__ == "__main__":
-    IO().main()
+    #IO().main()
+    tests.data_test.graph_tests()

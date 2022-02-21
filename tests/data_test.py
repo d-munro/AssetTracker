@@ -51,8 +51,9 @@ def graph_tests():
     df = pd.read_excel("resources/spreadsheets/functional.xlsx")
     try:
         manager = dm.DataManager(df)
-        manager.load_entries("BTC")
+        manager.load_all()
         graph = src.graphs.graph.Graph(manager.get_visible_data())
+        graph.plot("ETH")
     except ValueError as e:
         print(e)
     
