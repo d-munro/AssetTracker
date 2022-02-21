@@ -177,31 +177,34 @@ class Driver:
         self._manager = DataManager(df)
         self._visible_data = pd.DataFrame()
         
-    def _execute_display_asset_names_request(self):
+    def _display_all_tickers(self):
         pass
     
-    def _execute_display_visible_assets_request(self, request):        
+    def _display_assets(self):
+        pass
+    
+    def _display_all_assets(self, request):        
         if len(self._visible_data) == 0:
             raise UserWarning("There are no assets in the visible dataframe")
         assets = request.get_assets()
     
-    def _execute_hide_all_assets_request(self):
+    def _hide_assets(self, request):
+        pass
+
+    def _hide_all_assets(self):
         self._visible_data = pd.DataFrame(columns = self._visible_data.columns)
         return "All data in the visible dataframe has been cleared"
     
-    def _execute_hide_assets_request(self, request):
+    def _load_assets(self, request):
+        pass
+        
+    def _load_all_assets(self):
         pass
     
-    def _execute_load_all_assets_request(self):
+    def _plot_assets(self, request):
         pass
     
-    def _execute_load_assets_request(self, request):
-        pass
-    
-    def _execute_plot_assets_request(self, request):
-        pass
-    
-    def _execute_quit_request(self):
+    def _quit(self):
         return "Thank you for using the asset tracker"
         
     def execute_request(self, request):
@@ -217,59 +220,68 @@ class Driver:
         Returns:
             String or Dataframe containing the result of the request
         """
-        switch = {
-            #Request.DISPLAY_ALL_ASSET_NAMES : self._execute_display_all_asset_names_request(),
-            #Request.DISPLAY_VISIBLE_ASSET_NAMES : self._execute_display_visible_asset_names_request(),
-            #Request.DISPLAY_VISIBLE_ASSETS : self._execute_display_visible_assets_request(request),
-            #Request.DISPLAY_ALL_VISIBLE_ASSETS : self._execute_display_all_visible_assets_request(request),
-            #Request.HIDE_ASSETS : self._execute_hide_assets_request(request),
-            #Request.HIDE_ALL_ASSETS : self._execute_hide_all_assets_request(),
-            #Request.LOAD_ASSETS : self._execute_load_assets_request(request),
-            #Request.LOAD_ALL_ASSETS : self._execute_load_all_assets_request(),
-            #Request.PLOT_ASSETS : self._execute_plot_asset_request(request),
-            Request.QUIT : self._execute_quit_request()
-        }
-        try:
-            return switch.get(request.get_request())
-        except (UserWarning) as e:
-            raise e
+        output = ""
+        choice = request.get_request()
+        if choice == Request.DISPLAY_ALL_TICKERS:
+            output = self._display_all_tickers()
+        elif choice == Request.DISPLAY_ASSETS:
+            output = self._display_assets()
+        elif choice == Request.DISPLAY_ALL_ASSETS:
+            output = self._display_all_assets()
+        elif choice == Request.HIDE_ASSETS:
+            output = self._hide_assets()
+        elif choice == Request.HIDE_ALL_ASSETS:
+            output = self._hide_all_assets()
+        elif choice == Request.LOAD_ASSETS:
+            output = self._load_assets()
+        elif choice == Request.LOAD_ALL_ASSETS:
+            output = self._load_all_assets()
+        elif choice == Request.PLOT_ASSETS:
+            output = self._plot_assets()
+        elif choice == Request.QUIT:
+            output = self._quit()
+        return output
 
 class Request:
     """
     Ensures that user input is syntactically correct before passing to AssetManager
     """
     
-    DISPLAY_ALL_ASSET_NAMES:Final = 1
-    DISPLAY_VISIBLE_ASSET_NAMES:Final = 2
-    DISPLAY_VISIBLE_ASSETS:Final = 3
-    DISPLAY_ALL_VISIBLE_ASSETS:Final = 4
-    HIDE_ASSETS:Final = 5
-    HIDE_ALL_ASSETS:Final = 6
-    LOAD_ASSETS:Final = 7
-    LOAD_ALL_ASSETS:Final = 8
-    PLOT_ASSETS:Final = 9
-    QUIT:Final = 10
+    #Request Codes
+    DISPLAY_ALL_TICKERS:Final = 1 #Displays all tickers loaded in program
+    DISPLAY_ASSETS:Final = 2 #Allows user to display only certain assets
+    DISPLAY_ALL_ASSETS:Final = 3 #Displays all loaded assets
+    HIDE_ASSETS:Final = 4 #Allows user to choose which assets they wish to hide
+    HIDE_ALL_ASSETS:Final = 5 #Clears all assets from the active view
+    LOAD_ASSETS:Final = 6 #Allows user to choose which assets they wish to load
+    LOAD_ALL_ASSETS:Final = 7 #Loads all assets from spreadsheet into the active view
+    PLOT_ASSETS:Final = 8 #Creates plots of an asset
+    QUIT:Final = 9 #Terminate the program
     
-    _SMALLEST_VALUE:Final = DISPLAY_ALL_ASSET_NAMES #Smallest int value of possible requests
+    _SMALLEST_VALUE:Final = DISPLAY_ALL_TICKERS #Smallest int value of possible requests
     _LARGEST_VALUE:Final = QUIT #Largest int value of possible requests
     
     #dictionary of all valid requests mapped to their descriptions
     _VALID_REQUESTS:Final = {
-            DISPLAY_ALL_ASSET_NAMES: "display the names of all assets loaded into the program (including non-visible assets)",
-            DISPLAY_VISIBLE_ASSETS: "select the name of a loaded visible asset to display",
-            DISPLAY_ALL_VISIBLE_ASSETS: "display all currently loaded visible assets",
-            HIDE_ASSETS: "hide assets currently in the visible dataframe from sight",
-            HIDE_ALL_ASSETS: "hide all assets currently in the visible dataframe from sight",
-            LOAD_ASSETS: "load assets into the visible dataframe",
-            LOAD_ALL_ASSETS: "load all assets into the visible dataframe",
-            PLOT_ASSETS: "plot a chart of specified loaded assets",
+            DISPLAY_ALL_TICKERS: "display a list of all currently loaded tickers",
+            DISPLAY_ASSETS: "choose an asset to display the entries of",
+            DISPLAY_ALL_ASSETS: "display the entries of all visible assets",
+            HIDE_ASSETS: "choose an asset to hide from view",
+            HIDE_ALL_ASSETS: "hide all assets from view",
+            LOAD_ASSETS: "choose an asset to load from the imported dataset into view",
+            LOAD_ALL_ASSETS: "load all assets from the imported dataset into view",
+            PLOT_ASSETS: "create a chart from an asset in view",
             QUIT: "terminate the program"
-        }
+    }
     
     #set of all requests which can function without an asset to act upon
-    _REQUESTS_NO_ASSETS:Final = {DISPLAY_ALL_ASSET_NAMES, DISPLAY_VISIBLE_ASSET_NAMES,
-                                 DISPLAY_ALL_VISIBLE_ASSETS,
-                                  LOAD_ALL_ASSETS, HIDE_ALL_ASSETS, QUIT}
+    _STANDALONE_REQUESTS:Final = {
+        DISPLAY_ALL_TICKERS,
+        DISPLAY_ALL_ASSETS,
+        HIDE_ALL_ASSETS,
+        LOAD_ALL_ASSETS,
+        QUIT
+    }
     
     
     def __init__(self, request, assets=None):
@@ -283,7 +295,7 @@ class Request:
         """
         if request not in Request._VALID_REQUESTS:
             raise ValueError("Please enter the number of a valid request")
-        if (request not in Request._REQUESTS_NO_ASSETS) and (assets == None):
+        if (request not in Request._STANDALONE_REQUESTS) and (assets == None):
             raise ValueError("That request requires an asset")
         self._request = request
         self._assets = assets
@@ -309,8 +321,8 @@ class Request:
         return Request._LARGEST_VALUE
         
     @staticmethod
-    def get_REQUESTS_NO_ASSETS():
-        return Request._REQUESTS_NO_ASSETS
+    def get_STANDALONE_REQUESTS():
+        return Request._STANDALONE_REQUESTS
     
     @staticmethod
     def get_VALID_REQUESTS():

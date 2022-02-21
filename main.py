@@ -114,7 +114,7 @@ class IO:
     def run(self):
         user_num = 0
         prompt = self.get_prompt()
-        assetless_requests = manager.Request.get_REQUESTS_NO_ASSETS()
+        standalone_requests = manager.Request.get_STANDALONE_REQUESTS()
         while not user_num == manager.Request.QUIT:
             try:
                 #Name of the asset that the request is acting on
@@ -131,7 +131,7 @@ class IO:
                                                  manager.Request.get_largest_value()))
                     
                 #Obtain name of asset request is acting on if necessary
-                if not user_num in assetless_requests:
+                if not user_num in standalone_requests:
                     asset_name = input("Enter the name of the asset:\n")
                     
                 request = manager.Request(user_num, asset_name)
@@ -155,5 +155,5 @@ class IO:
         return "".join(temp)
 
 if __name__ == "__main__":
-    #IO().main()
-    tests.graph_tests()
+    IO().main()
+    #tests.graph_tests()
