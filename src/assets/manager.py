@@ -20,16 +20,20 @@ import pandas as pd
 
 class DataManager:
     """
-    Responsible for directly retrieving data from the complete dataframe
+    Responsible for directly retrieving data from the full dataframe into the visible dataframe
     
     (Long Description TODO)
     
     Attributes:
-        tickers_to_assets (dict[string:Asset]): 
+        all_entries (pandas.DataFrame) - Full Dataframe of all asset entries loaded into the program
+        visible_entries (pandas.DataFrame) - Dataframe of asset entries which are currently visible. 
+            To allow for fast viewing and computation, only part of the full dataframe is loaded into view at
+            one time
+        tickers_to_assets (dict[string:Asset]) - 
             Dictionary mapping the ticker of an asset to its object representation
-        names_to_tickers (dict[string:string]): 
+        names_to_tickers (dict[string:string]) -
             Dictionary mapping the name of an asset to its ticker
-        assets_to_graphs (dict[Asset:Graph]): 
+        assets_to_graphs (dict[Asset:Graph]) -
             Dictionary mapping each Asset with its current graphical representation
             
     Methods:
@@ -38,95 +42,95 @@ class DataManager:
     
     _REQUIRED_COLUMNS:Final = {"Ticker", "Date", "Time", "Price"}
     
-    def __init__(self, df):
+    def __init__(self, all_entries):
         """
         Attributes:
-            df - The dataframe of all data loaded into the program
+            all_entries - Dataframe containing all asset entries to be loaded into program
             
         Raises:
             ValueError - If the dataframe is missing required columns
         """
-        if (df is not None):
+        if (all_entries is not None):
             self._assets_to_graphs = None
-            self._df = df
+            self._all_entries = all_entries
             self._capitalize_columns()
             self._check_column_validity()
-            self._df = self._df.sort_values(["Ticker", "Date", "Time"])
-            self._visible_data = pd.DataFrame()
+            self._all_entries = self._all_entries.sort_values(["Ticker", "Date", "Time"])
+            self._visible_entries = self._all_entries
     
     def _capitalize_columns(self):
         """
         Capitalizes all column headers for the main dataframe
         """
         capitalized_columns = []
-        for column in self._df.columns:
+        for column in self._all_entries.columns:
             capitalized_columns.append(column.lower().capitalize())
-        self._df.columns = capitalized_columns
+        self._all_entries.columns = capitalized_columns
     
     def _check_column_validity(self):
         """
-        Checks if the dataframe 
+        Checks if the dataframe contains required columns
         """
         required_columns_remaining = self._REQUIRED_COLUMNS
-        for column in self._df.columns:
+        for column in self._all_entries.columns:
             if column in self._REQUIRED_COLUMNS:
                 required_columns_remaining.remove(column)
         if len(required_columns_remaining) > 0:
             raise ValueError("The spreadsheet is missing several required columns")
             
-    def hide_all(self):
+    def hide_all_entries(self):
         """
-        Hides all entries from the visible dataframe
+        Hides all entries from visible dataframe
         """
-        self._visible_data = pd.DataFrame()
+        self._visible_entries = pd.DataFrame()
         
-    def hide_entry(self, *tickers):
+    def hide_entries(self, *tickers):
         """
-        Hides specified tickers from visible database
+        Hides specified tickers from visible dataframe
         
         Attributes:
-            tickers - All tickers to hide from the visible database
+            tickers - All tickers to hide from the visible dataframe
         """
         #Tilde (~) is bitwise not operator
         for ticker in tickers:
-            self._visible_data = self._visible_data.loc[~(self._visible_data["Ticker"] == ticker)]
+            self._visible_entries = self._visible_entries.loc[~(self._visible_entries["Ticker"] == ticker)]
     
     def load_entries(self, *tickers):
         """
-        Loads all associated tickers from the complete dataframe into the visible dataframe
+        Loads all entries for chosen tickers from full dataframe into the visible dataframe
         
         Attributes:
             tickers - All entries to be loaded into the visible dataframe
             
         Raises:
-            ValueError - If any tickers are not present in the complete dataframe
+            ValueError - If any tickers are not present in full dataframe
         """
         for ticker in tickers:
             try:
-                new_entry = self._df.loc[self._df["Ticker"] == ticker]
-                self._visible_data = pd.concat([new_entry, self._visible_data])
+                new_entry = self._all_entries.loc[self._all_entries["Ticker"] == ticker]
+                self._visible_entries = pd.concat([new_entry, self._visible_entries])
             except ValueError:
                 message = "".join(ticker).join(" is not currently loaded. Loading entries cancelled")
                 raise message             
-        self._visible_data = self._visible_data.sort_values(["Ticker", "Date", "Time"])  
+        self._visible_entries = self._visible_entries.sort_values(["Ticker", "Date", "Time"])  
             
-    def load_all(self):
+    def load_all_entries(self):
         """
-        Loads all assets into the visible dataframe
+        Loads all entries from full dataframe into visible dataframe
         """
-        self._visible_data = self._df
+        self._visible_entries = self._all_entries
 
-    def get_all_assets(self):
+    def get_all_tickers(self):
         """
-        Returns a list of all assets currently loaded in the complete dataframe
+        Returns a list of all tickers currently loaded in the visible dataframe
         """
-        assets_list = []
-        assets_df = self._df["Ticker"].drop_duplicates()
-        for i in range(len(assets_df)):
-            assets_list.append(assets_df[i])
-        return assets_list
+        tickers_list = []
+        tickers_df = self._all_entries["Ticker"].drop_duplicates()
+        for i in range(len(tickers_df)):
+            tickers_list.append(tickers_df[i])
+        return tickers_list
     
-    def get_all_entries(self, ticker, starting_date = None, ending_date = None):
+    def get_visible_entries(self, ticker, starting_date = None, ending_date = None):
         """
         Returns all entries in visible dataframe for a specific asset formatted
         as a list of tuples
@@ -139,7 +143,7 @@ class DataManager:
         Raises:
             UserWarning - If the ticker is not loaded in the visible dataframe
         """
-        entries_df = self._visible_data.loc[self._visible_data["Ticker"] == ticker]
+        entries_df = self._visible_entries.loc[self._visible_entries["Ticker"] == ticker]
         if len(entries_df) == 0:
             raise UserWarning("Warning: No action taken, {} is not present in the visible dataframe".format(ticker))
         entries = []
@@ -147,26 +151,26 @@ class DataManager:
             entries.append(entry)
         return entries
         
-    def get_visible_assets(self):
+    def get_all_visible_tickers(self):
         """
-        Returns a list of all assets currently loaded in the visible dataframe
+        Returns a list of all tickers currently loaded in visible dataframe
         """
         assets_list = []
-        assets_df = self._visible_data["Ticker"].drop_duplicates()
+        assets_df = self._visible_entries["Ticker"].drop_duplicates()
         for i in range(len(assets_df)):
             assets_list.append(assets_df[i])
         return assets_list
             
-    def get_visible_data(self):
+    def get_all_visible_entries(self):
         """
-        Returns the visible dataframe
+        Returns all entries in the visible dataframe
         
         raises:
             UserWarning - if no rows are currently loaded
         """
-        if len(self._visible_data) == 0:
+        if len(self._visible_entries) == 0:
             raise UserWarning("No assets are currently loaded")
-        return self._visible_data
+        return self._visible_entries
     
 class Driver:
     """
@@ -175,13 +179,12 @@ class Driver:
     
     def __init__(self, df):
         self._manager = DataManager(df)
-        self._visible_data = pd.DataFrame()
         
     def _display_all_tickers(self):
-        pass
+        return self._manager.get_visible_data()
     
-    def _display_assets(self):
-        pass
+    def _display_assets(self, request):
+        return self._manager.
     
     def _display_all_assets(self, request):        
         if len(self._visible_data) == 0:
@@ -193,13 +196,14 @@ class Driver:
 
     def _hide_all_assets(self):
         self._visible_data = pd.DataFrame(columns = self._visible_data.columns)
-        return "All data in the visible dataframe has been cleared"
+        return "All assets have been removed from view"
     
     def _load_assets(self, request):
         pass
         
     def _load_all_assets(self):
-        pass
+        self._manager.load_all()
+        return "All assets have been loaded into view"
     
     def _plot_assets(self, request):
         pass
@@ -225,19 +229,19 @@ class Driver:
         if choice == Request.DISPLAY_ALL_TICKERS:
             output = self._display_all_tickers()
         elif choice == Request.DISPLAY_ASSETS:
-            output = self._display_assets()
+            output = self._display_assets(request)
         elif choice == Request.DISPLAY_ALL_ASSETS:
             output = self._display_all_assets()
         elif choice == Request.HIDE_ASSETS:
-            output = self._hide_assets()
+            output = self._hide_assets(request)
         elif choice == Request.HIDE_ALL_ASSETS:
             output = self._hide_all_assets()
         elif choice == Request.LOAD_ASSETS:
-            output = self._load_assets()
+            output = self._load_assets(request)
         elif choice == Request.LOAD_ALL_ASSETS:
             output = self._load_all_assets()
         elif choice == Request.PLOT_ASSETS:
-            output = self._plot_assets()
+            output = self._plot_assets(request)
         elif choice == Request.QUIT:
             output = self._quit()
         return output
