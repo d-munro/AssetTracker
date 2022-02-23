@@ -148,10 +148,7 @@ class DataManager:
         entries_df = self._visible_entries.loc[self._visible_entries["Ticker"] == ticker]
         if len(entries_df) == 0:
             raise UserWarning("Warning: No action taken, {} is not present in the visible dataframe".format(ticker))
-        entries = []
-        for entry in entries_df.itertuples():
-            entries.append(entry)
-        return entries
+        return entries_df
         
     def get_all_visible_tickers(self):
         """
@@ -172,10 +169,7 @@ class DataManager:
         """
         if len(self._visible_entries) == 0:
             raise UserWarning("No assets are currently loaded")
-        entries = []
-        for entry in self._visible_entries.itertuples():
-            entries.append(entry)
-        return entries
+        return self._visible_entries
     
     def get_num_of_visible_entries(self):
         """
