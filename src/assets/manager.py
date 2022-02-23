@@ -11,6 +11,8 @@ Powered by CoinGecko API
 @author: Dylan Munro
 """
 
+import src.graphs.graph as graph
+
 from typing import Final
 from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
@@ -163,14 +165,23 @@ class DataManager:
             
     def get_all_visible_entries(self):
         """
-        Returns all entries in the visible dataframe
+        Returns all entries in the visible dataframe formatted as a list of tuples
         
         raises:
             UserWarning - if no rows are currently loaded
         """
         if len(self._visible_entries) == 0:
             raise UserWarning("No assets are currently loaded")
-        return self._visible_entries
+        entries = []
+        for entry in self._visible_entries.itertuples():
+            entries.append(entry)
+        return entries
+    
+    def get_num_of_visible_entries(self):
+        """
+        Returns the number of rows in the visible dataframe
+        """
+        return len(self._visible_entries)
     
 class Driver:
     """
@@ -179,34 +190,52 @@ class Driver:
     
     def __init__(self, df):
         self._manager = DataManager(df)
+        self._grapher = graph.Graph(df)
         
+    #---------------------------------- Request Execution Methods--------------
+    
     def _display_all_tickers(self):
-        return self._manager.get_visible_data()
+        return self._manager.get_all_tickers()
     
-    def _display_assets(self, request):
-        return self._manager.
+    def _display_all_visible_tickers(self):
+        if self._manager.get_num_of_visible_entries() == 0:
+            raise UserWarning("There are no visible tickers")
+        return self._manager.get_all_visible_tickers()
     
-    def _display_all_assets(self, request):        
-        if len(self._visible_data) == 0:
-            raise UserWarning("There are no assets in the visible dataframe")
-        assets = request.get_assets()
+    def _display_visible_entries(self, request):
+        return self._manager.get_visible_entries(request.get_assets())
     
-    def _hide_assets(self, request):
-        pass
+    def _display_all_visible_entries(self):        
+        if self._manager.get_num_of_visible_entries() == 0:
+            raise UserWarning("There are no visible entries")
+        return self._manager.get_all_visible_entries()
+    
+    def _hide_entries(self, request):
+        self._manager.hide_entries(request.get_assets())
+        returned_str = []
+        for asset in request.get_assets():
+            returned_str.append(asset)
+        returned_str.append(" has been removed from the view")
+        return "".join(returned_str)
 
-    def _hide_all_assets(self):
-        self._visible_data = pd.DataFrame(columns = self._visible_data.columns)
+    def _hide_all_entries(self):
+        self._manager.hide_all_entries()
         return "All assets have been removed from view"
     
-    def _load_assets(self, request):
-        pass
+    def _load_entries(self, request):
+        self._manager.load_entries(request.get_assets())
+        returned_str = []
+        for asset in request.get_assets():
+            returned_str.append(asset)
+        returned_str.append(" has been loaded into the view")
+        return "".join(returned_str)
         
-    def _load_all_assets(self):
-        self._manager.load_all()
+    def _load_all_entries(self):
+        self._manager.load_all_entries()
         return "All assets have been loaded into view"
     
     def _plot_assets(self, request):
-        pass
+        self._grapher.plot(request.get_assets())
     
     def _quit(self):
         return "Thank you for using the asset tracker"
@@ -228,18 +257,20 @@ class Driver:
         choice = request.get_request()
         if choice == Request.DISPLAY_ALL_TICKERS:
             output = self._display_all_tickers()
-        elif choice == Request.DISPLAY_ASSETS:
-            output = self._display_assets(request)
-        elif choice == Request.DISPLAY_ALL_ASSETS:
-            output = self._display_all_assets()
-        elif choice == Request.HIDE_ASSETS:
-            output = self._hide_assets(request)
-        elif choice == Request.HIDE_ALL_ASSETS:
-            output = self._hide_all_assets()
-        elif choice == Request.LOAD_ASSETS:
-            output = self._load_assets(request)
-        elif choice == Request.LOAD_ALL_ASSETS:
-            output = self._load_all_assets()
+        if choice == Request.DISPLAY_ALL_VISIBLE_TICKERS:
+            output = self._display_all_visible_tickers()
+        elif choice == Request.DISPLAY_VISIBLE_ENTRIES:
+            output = self._display_visible_entries(request)
+        elif choice == Request.DISPLAY_ALL_VISIBLE_ENTRIES:
+            output = self._display_all_visible_entries()
+        elif choice == Request.HIDE_ENTRIES:
+            output = self._hide_entries(request)
+        elif choice == Request.HIDE_ALL_ENTRIES:
+            output = self._hide_all_entries()
+        elif choice == Request.LOAD_ENTRIES:
+            output = self._load_entries(request)
+        elif choice == Request.LOAD_ALL_ENTRIES:
+            output = self._load_all_entries()
         elif choice == Request.PLOT_ASSETS:
             output = self._plot_assets(request)
         elif choice == Request.QUIT:
@@ -253,27 +284,29 @@ class Request:
     
     #Request Codes
     DISPLAY_ALL_TICKERS:Final = 1 #Displays all tickers loaded in program
-    DISPLAY_ASSETS:Final = 2 #Allows user to display only certain assets
-    DISPLAY_ALL_ASSETS:Final = 3 #Displays all loaded assets
-    HIDE_ASSETS:Final = 4 #Allows user to choose which assets they wish to hide
-    HIDE_ALL_ASSETS:Final = 5 #Clears all assets from the active view
-    LOAD_ASSETS:Final = 6 #Allows user to choose which assets they wish to load
-    LOAD_ALL_ASSETS:Final = 7 #Loads all assets from spreadsheet into the active view
-    PLOT_ASSETS:Final = 8 #Creates plots of an asset
-    QUIT:Final = 9 #Terminate the program
+    DISPLAY_ALL_VISIBLE_TICKERS:Final = 2 #Displays all visible tickers
+    DISPLAY_VISIBLE_ENTRIES:Final = 3 #Allows user to display only certain assets
+    DISPLAY_ALL_VISIBLE_ENTRIES:Final = 4 #Displays all loaded assets
+    HIDE_ENTRIES:Final = 5 #Allows user to choose which assets they wish to hide
+    HIDE_ALL_ENTRIES:Final = 6 #Clears all assets from the active view
+    LOAD_ENTRIES:Final = 7 #Allows user to choose which assets they wish to load
+    LOAD_ALL_ENTRIES:Final = 8 #Loads all assets from spreadsheet into the active view
+    PLOT_ASSETS:Final = 9 #Creates plots of an asset
+    QUIT:Final = 10 #Terminate the program
     
     _SMALLEST_VALUE:Final = DISPLAY_ALL_TICKERS #Smallest int value of possible requests
     _LARGEST_VALUE:Final = QUIT #Largest int value of possible requests
     
     #dictionary of all valid requests mapped to their descriptions
     _VALID_REQUESTS:Final = {
-            DISPLAY_ALL_TICKERS: "display a list of all currently loaded tickers",
-            DISPLAY_ASSETS: "choose an asset to display the entries of",
-            DISPLAY_ALL_ASSETS: "display the entries of all visible assets",
-            HIDE_ASSETS: "choose an asset to hide from view",
-            HIDE_ALL_ASSETS: "hide all assets from view",
-            LOAD_ASSETS: "choose an asset to load from the imported dataset into view",
-            LOAD_ALL_ASSETS: "load all assets from the imported dataset into view",
+            DISPLAY_ALL_TICKERS: "display a list of all tickers, including those hidden from view",
+            DISPLAY_ALL_VISIBLE_TICKERS: "display a list of all visible tickers",
+            DISPLAY_VISIBLE_ENTRIES: "display the entries of visible assets",
+            DISPLAY_ALL_VISIBLE_ENTRIES: "display the entries of all visible assets",
+            HIDE_ENTRIES: "hide assets from view",
+            HIDE_ALL_ENTRIES: "hide all assets from view",
+            LOAD_ENTRIES: "load hidden assets into view",
+            LOAD_ALL_ENTRIES: "load all hidden assets into view",
             PLOT_ASSETS: "create a chart from an asset in view",
             QUIT: "terminate the program"
     }
@@ -281,9 +314,10 @@ class Request:
     #set of all requests which can function without an asset to act upon
     _STANDALONE_REQUESTS:Final = {
         DISPLAY_ALL_TICKERS,
-        DISPLAY_ALL_ASSETS,
-        HIDE_ALL_ASSETS,
-        LOAD_ALL_ASSETS,
+        DISPLAY_ALL_VISIBLE_TICKERS,
+        DISPLAY_ALL_VISIBLE_ENTRIES,
+        HIDE_ALL_ENTRIES,
+        LOAD_ALL_ENTRIES,
         QUIT
     }
     

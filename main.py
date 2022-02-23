@@ -132,7 +132,7 @@ class IO:
                     
                 #Obtain name of asset request is acting on if necessary
                 if not user_num in standalone_requests:
-                    asset_name = input("Enter the name of the asset:\n")
+                    asset_name = input("Enter the name of the asset (case-sensitive):\n")
                     
                 request = manager.Request(user_num, asset_name)
                 print(self._driver.execute_request(request))
