@@ -24,7 +24,7 @@ class IO:
     
     #Final means static class checkers wont reassign. Must import Final from typing
     _SUPPORTED_FILES:Final = {".csv", ".xlsx"}
-    _DEFAULT_FILE:Final = "resources/spreadsheets/functional.xlsx"
+    _DEFAULT_FILE:Final = "resources/spreadsheets/BitcoinPrices2022.xlsx"
     
     def __init__(self):
         self._driver = None
@@ -81,11 +81,15 @@ class IO:
                     print("{}".format(e))
                     response = self.get_yes_no_response("Would you like to try loading a different file? (Yes/No)\n")
                     if response == "no":
+                        self.load_default_file()
                         file_loaded = True
         else: #Load the default file
-            print("Loading default file at {}".format(IO._DEFAULT_FILE))
-            df = self.load_file(IO._DEFAULT_FILE)
-            self._driver = manager.Driver(df)
+            self.load_default_file()
+    
+    def load_default_file(self):
+        print("Loading default file at {}".format(IO._DEFAULT_FILE))
+        df = self.load_file(IO._DEFAULT_FILE)
+        self._driver = manager.Driver(df)
     
     def load_file(self, file_path):
         """

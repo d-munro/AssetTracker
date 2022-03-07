@@ -128,8 +128,8 @@ class DataManager:
         """
         tickers_list = []
         tickers_df = self._all_entries["Ticker"].drop_duplicates()
-        for i in range(len(tickers_df)):
-            tickers_list.append(tickers_df[i])
+        for _, ticker in tickers_df.iteritems():
+            tickers_list.append(ticker)
         return tickers_list
     
     def get_visible_entries(self, ticker, starting_date = None, ending_date = None):
@@ -156,8 +156,9 @@ class DataManager:
         """
         assets_list = []
         assets_df = self._visible_entries["Ticker"].drop_duplicates()
-        for i in range(len(assets_df)):
-            assets_list.append(assets_df[i])
+        #Note: Above returns series, as a single column is returned
+        for _, asset in assets_df.iteritems():
+            assets_list.append(asset)
         return assets_list
             
     def get_all_visible_entries(self):
@@ -283,10 +284,11 @@ class Request:
     DISPLAY_ALL_VISIBLE_ENTRIES:Final = 4 #Displays all loaded assets
     HIDE_ENTRIES:Final = 5 #Allows user to choose which assets they wish to hide
     HIDE_ALL_ENTRIES:Final = 6 #Clears all assets from the active view
-    LOAD_ENTRIES:Final = 7 #Allows user to choose which assets they wish to load
-    LOAD_ALL_ENTRIES:Final = 8 #Loads all assets from spreadsheet into the active view
-    PLOT_ASSETS:Final = 9 #Creates plots of an asset
-    QUIT:Final = 10 #Terminate the program
+    HIDE_ALL_ENTRIES_BY_DATE:Final = 7 #Clears all entries outside of a specified date from the active view
+    LOAD_ENTRIES:Final = 8 #Allows user to choose which assets they wish to load
+    LOAD_ALL_ENTRIES:Final = 9 #Loads all assets from spreadsheet into the active view
+    PLOT_ASSETS:Final = 10 #Creates plots of an asset
+    QUIT:Final = 11 #Terminate the program
     
     _SMALLEST_VALUE:Final = DISPLAY_ALL_TICKERS #Smallest int value of possible requests
     _LARGEST_VALUE:Final = QUIT #Largest int value of possible requests
@@ -299,6 +301,7 @@ class Request:
             DISPLAY_ALL_VISIBLE_ENTRIES: "display the entries of all visible assets",
             HIDE_ENTRIES: "hide assets from view",
             HIDE_ALL_ENTRIES: "hide all assets from view",
+            HIDE_ALL_ENTRIES_BY_DATE: "hide all assets outside of a specified date",
             LOAD_ENTRIES: "load hidden assets into view",
             LOAD_ALL_ENTRIES: "load all hidden assets into view",
             PLOT_ASSETS: "create a chart from an asset in view",
