@@ -44,7 +44,15 @@ class Graph:
         plt.xlabel("Date and Time")
         plt.xticks(rotation=30, ha='right')
         plt.ylabel("Price")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        
+        plt.legend(bbox_to_anchor = (1.05, 1), loc = "upper left", borderaxespad = 0)
+        #Above parameters will always make legend appear in the top right corner
+        #loc specifies the corner where the legend is placed
+        #bbox_to_anchor specifies the location for the corner
+        
+        file_name = "".join([title, ".png"])
+        plt.savefig(file_name, dpi = 750, bbox_inches = "tight")
+        #Must add bbox_inches so graph isn't cut off
         plt.show()
 
         

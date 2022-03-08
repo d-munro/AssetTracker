@@ -210,12 +210,7 @@ class Driver:
     
     def _hide_entries(self, request):
         self._manager.hide_entries(request.get_assets())
-        returned_str = []
-        for asset in request.get_assets():
-            returned_str.append(asset)
-            returned_str.append(" ")
-        returned_str.append("has been removed from the view")
-        return "".join(returned_str)
+        return " ".join([", ".join(request.get_assets()), "has been removed from the view"])
 
     def _hide_all_entries(self):
         self._manager.hide_all_entries()
@@ -292,11 +287,10 @@ class Request:
     DISPLAY_ALL_VISIBLE_ENTRIES:Final = 4 #Displays all loaded assets
     HIDE_ENTRIES:Final = 5 #Allows user to choose which assets they wish to hide
     HIDE_ALL_ENTRIES:Final = 6 #Clears all assets from the active view
-    HIDE_ALL_ENTRIES_BY_DATE:Final = 7 #Clears all entries outside of a specified date from the active view
-    LOAD_ENTRIES:Final = 8 #Allows user to choose which assets they wish to load
-    LOAD_ALL_ENTRIES:Final = 9 #Loads all assets from spreadsheet into the active view
-    PLOT_ASSETS:Final = 10 #Creates plots of an asset
-    QUIT:Final = 11 #Terminate the program
+    LOAD_ENTRIES:Final = 7 #Allows user to choose which assets they wish to load
+    LOAD_ALL_ENTRIES:Final = 8 #Loads all assets from spreadsheet into the active view
+    PLOT_ASSETS:Final = 9 #Creates plots of an asset
+    QUIT:Final = 10 #Terminate the program
     
     _SMALLEST_VALUE:Final = DISPLAY_ALL_TICKERS #Smallest int value of possible requests
     _LARGEST_VALUE:Final = QUIT #Largest int value of possible requests
@@ -309,7 +303,6 @@ class Request:
             DISPLAY_ALL_VISIBLE_ENTRIES: "display the entries of all visible assets",
             HIDE_ENTRIES: "hide assets from view",
             HIDE_ALL_ENTRIES: "hide all assets from view",
-            HIDE_ALL_ENTRIES_BY_DATE: "hide all assets outside of a specified date",
             LOAD_ENTRIES: "load hidden assets into view",
             LOAD_ALL_ENTRIES: "load all hidden assets into view",
             PLOT_ASSETS: "create a chart from an asset in view",
