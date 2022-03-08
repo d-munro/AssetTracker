@@ -32,30 +32,20 @@ class Graph:
         Raises:
             UserWarning - If the entered tickers are not viewable
         """
-        points = pd.DataFrame()
+        title = " ".join(["Price history of", " vs. ".join(tickers)])
         for ticker in tickers:
-            added_entries = self._df.loc[self._df["Ticker"] == ticker]
-            if len(added_entries) == 0:
-                raise UserWarning("Warning: {} was not found in the dataset.\nGraphing terminated".format(ticker))
             points = self._df.loc[self._df["Ticker"] == ticker]
-        title = " ".join(["Price history of", "vs. ".join(tickers)])
-        #prices = []
-        #times = []
-        prices = points.Price #Access price column in dataframe
-        #times = dt.datetime.combine(points.Date, points.Time)
-        times = pd.to_datetime(points.Date.astype(str) + ' ' + points.Time.astype(str))
-        #for index, ticker, date, time, price in points.itertuples():
-            #prices.append(price)
-            #times.append(dt.datetime.combine(date, time))
-        #plt.plot_date(times, prices)
-        plt.plot(times, prices)
+            if len(points) == 0:
+                raise UserWarning("Warning: {} was not found in the visible dataframe.\nGraphing terminated".format(ticker))
+            times = pd.to_datetime(points.Date.astype(str) + ' ' + points.Time.astype(str))
+            plt.plot(times, points.Price, label = ticker, marker = ".")
+        
         plt.title(title)
         plt.xlabel("Date and Time")
         plt.xticks(rotation=30, ha='right')
         plt.ylabel("Price")
-        #plt.locator_params(axis="x", nbins=4)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         plt.show()
-        #print(points)
 
         
     

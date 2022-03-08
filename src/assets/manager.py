@@ -234,7 +234,9 @@ class Driver:
         return "All assets have been loaded into view"
     
     def _plot_assets(self, request):
-        new_graph = graph.Graph(self._manager.get_all_visible_entries())
+        #data = self._manager.get_visible_entries(request.get_assets)
+        data = self._display_visible_entries(request)
+        new_graph = graph.Graph(data)
         new_graph.plot(request.get_assets())
         return "The assets have been plotted"
     
