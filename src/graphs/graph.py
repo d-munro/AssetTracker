@@ -21,14 +21,6 @@ class Graph:
             df - The dataframe containing the relevant asset information
         """
         self._df = df
-        
-    def _generate_points(self, df, ticker):
-        points = self._df.loc[self._df["Ticker"] == ticker]
-        self._prices = []
-        self._times = []
-        for index, ticker, date, time, price in points.itertuples():
-            self._prices.append(price)
-            self._times.append(dt.datetime.combine(date, time))
 
     def plot(self, tickers):
         """
@@ -46,7 +38,7 @@ class Graph:
             if len(added_entries) == 0:
                 raise UserWarning("Warning: {} was not found in the dataset.\nGraphing terminated".format(ticker))
             points = self._df.loc[self._df["Ticker"] == ticker]
-        #title = ticker + " price history"
+        title = " ".join(["Price history of", "vs. ".join(tickers)])
         #prices = []
         #times = []
         prices = points.Price #Access price column in dataframe
@@ -57,7 +49,7 @@ class Graph:
             #times.append(dt.datetime.combine(date, time))
         #plt.plot_date(times, prices)
         plt.plot(times, prices)
-        #plt.title(ticker + " Price History")
+        plt.title(title)
         plt.xlabel("Date and Time")
         plt.xticks(rotation=30, ha='right')
         plt.ylabel("Price")
