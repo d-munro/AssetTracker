@@ -86,7 +86,7 @@ class DataManager:
         """
         self._visible_entries = pd.DataFrame()
         
-    def hide_entries(self, *tickers):
+    def hide_entries(self, tickers):
         """
         Hides specified tickers from visible dataframe
         
@@ -97,7 +97,7 @@ class DataManager:
         for ticker in tickers:
             self._visible_entries = self._visible_entries.loc[~(self._visible_entries["Ticker"] == ticker)]
     
-    def load_entries(self, *tickers):
+    def load_entries(self, tickers):
         """
         Loads all entries for chosen tickers from full dataframe into the visible dataframe
         
@@ -132,7 +132,7 @@ class DataManager:
             tickers_list.append(ticker)
         return tickers_list
     
-    def get_visible_entries(self, ticker, starting_date = None, ending_date = None):
+    def get_visible_entries(self, tickers, starting_date = None, ending_date = None):
         """
         Returns all entries in visible dataframe for a specific asset formatted
         as a list of tuples
@@ -145,9 +145,13 @@ class DataManager:
         Raises:
             UserWarning - If the ticker is not loaded in the visible dataframe
         """
-        entries_df = self._visible_entries.loc[self._visible_entries["Ticker"] == ticker]
+        entries_df = pd.DataFrame()
+        for i in range(len(tickers)):
+            ticker = tickers[i]
+            new_entries = self._visible_entries.loc[self._visible_entries["Ticker"] == ticker]
+            entries_df = pd.concat([entries_df, new_entries])
         if len(entries_df) == 0:
-            raise UserWarning("Warning: No action taken, {} is not present in the visible dataframe".format(ticker))
+            raise UserWarning("Warning: No entries for the entered assets could be found")
         return entries_df
         
     def get_all_visible_tickers(self):
@@ -185,7 +189,6 @@ class Driver:
     
     def __init__(self, df):
         self._manager = DataManager(df)
-        self._grapher = graph.Graph(df)
         
     #---------------------------------- Request Execution Methods--------------
     
@@ -210,7 +213,8 @@ class Driver:
         returned_str = []
         for asset in request.get_assets():
             returned_str.append(asset)
-        returned_str.append(" has been removed from the view")
+            returned_str.append(" ")
+        returned_str.append("has been removed from the view")
         return "".join(returned_str)
 
     def _hide_all_entries(self):
@@ -230,7 +234,9 @@ class Driver:
         return "All assets have been loaded into view"
     
     def _plot_assets(self, request):
-        self._grapher.plot(request.get_assets())
+        new_graph = graph.Graph(self._manager.get_all_visible_entries())
+        new_graph.plot(request.get_assets())
+        return "The assets have been plotted"
     
     def _quit(self):
         return "Thank you for using the asset tracker"

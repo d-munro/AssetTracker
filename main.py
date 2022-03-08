@@ -24,7 +24,7 @@ class IO:
     
     #Final means static class checkers wont reassign. Must import Final from typing
     _SUPPORTED_FILES:Final = {".csv", ".xlsx"}
-    _DEFAULT_FILE:Final = "resources/spreadsheets/BitcoinPrices2022.xlsx"
+    _DEFAULT_FILE:Final = "resources/spreadsheets/MaticVsLrcPrices.xlsx"
     
     def __init__(self):
         self._driver = None
@@ -127,7 +127,8 @@ class IO:
         while not user_num == manager.Request.QUIT:
             try:
                 #Name of the asset that the request is acting on
-                asset_name = None
+                assets = None
+                assets_list = None
                 
                 #Check if user enters a valid number
                 response = input(prompt)
@@ -141,9 +142,9 @@ class IO:
                     
                 #Obtain name of asset request is acting on if necessary
                 if not user_num in standalone_requests:
-                    asset_name = input("Enter the name of the asset (case-sensitive):\n")
-                    
-                request = manager.Request(user_num, asset_name)
+                    assets = input("Enter the name of the asset(s) (case-sensitive), separating them by spaces:\n")
+                    assets_list = assets.split(" ")
+                request = manager.Request(user_num, assets=assets_list)
                 print(self._driver.execute_request(request))
             except (ValueError, UserWarning) as e:
                 print(e)
