@@ -25,6 +25,7 @@ class IO:
     #Final means static class checkers wont reassign. Must import Final from typing
     _SUPPORTED_FILES:Final = {".csv", ".xlsx"}
     _DEFAULT_FILE:Final = "resources/spreadsheets/MaticVsLrcPrices.xlsx"
+    _TEST_MODE:Final = False #Set to True when testing Program, set to False for actual deploy
     
     def __init__(self):
         self._driver = None
@@ -68,6 +69,11 @@ class IO:
         """
         Loads all preliminary data required for program operation
         """
+        #Load default file if in testing for quick setup
+        if self._TEST_MODE:
+            self.load_default_file()
+            return
+        
         file_loaded = False
         response = self.get_yes_no_response("Would you like to load an excel file? (Yes/No)\n")
         if response.lower() == "yes":

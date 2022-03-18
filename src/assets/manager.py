@@ -58,6 +58,7 @@ class DataManager:
             self._capitalize_columns()
             self._check_column_validity()
             self._all_entries = self._all_entries.sort_values(["Ticker", "Date", "Time"])
+            self._generate_percent_change()
             self._visible_entries = self._all_entries
     
     def _capitalize_columns(self):
@@ -79,6 +80,21 @@ class DataManager:
                 required_columns_remaining.remove(column)
         if len(required_columns_remaining) > 0:
             raise ValueError("The spreadsheet is missing several required columns")
+            
+    def _generate_percent_change(self):
+        """
+        Generates percent change between entries of assets. If the asset changes
+            between columns, then the percent change is set to 0
+        """
+        if "Percent Change" in self._all_entries:
+            return
+        self._all_entries["Percent Change"] = self._all_entries["Price"].pct_change() * 100
+        
+        #Change percentage errors when an asset changes
+        #false_percentages = self._all_entries.ne(self._all_entries.shift()).filter(like="Ticker").apply(lambda x: x.index[x].tolist())
+        false_percentages = self._all_entries["Ticker"].drop_duplicates().index.array
+        for i in false_percentages:
+            self._all_entries.loc[self._all_entries.index == i, "Percent Change"] = 0
             
     def hide_all_entries(self):
         """
