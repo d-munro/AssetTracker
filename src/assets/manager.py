@@ -278,10 +278,8 @@ class Driver:
         """
         output = ""
         choice = request.get_request()
-        if choice == Request.DISPLAY_ALL_TICKERS:
+        if choice == Request.DISPLAY_PRELOADED_TICKERS:
             output = self._display_all_tickers()
-        if choice == Request.DISPLAY_ALL_VISIBLE_TICKERS:
-            output = self._display_all_visible_tickers()
         elif choice == Request.DISPLAY_VISIBLE_ENTRIES:
             output = self._display_visible_entries(request)
         elif choice == Request.DISPLAY_ALL_VISIBLE_ENTRIES:
@@ -290,11 +288,7 @@ class Driver:
             output = self._hide_entries(request)
         elif choice == Request.HIDE_ALL_ENTRIES:
             output = self._hide_all_entries()
-        elif choice == Request.LOAD_ENTRIES:
-            output = self._load_entries(request)
-        elif choice == Request.LOAD_ALL_ENTRIES:
-            output = self._load_all_entries()
-        elif choice == Request.PLOT_ASSETS:
+        elif choice == Request.PLOT:
             output = self._plot_assets(request)
         elif choice == Request.QUIT:
             output = self._quit()
@@ -307,7 +301,7 @@ class Request:
     """
 
     # Request Codes
-    DISPLAY_ALL_TICKERS: Final = 1  # Displays all tickers loaded in program
+    DISPLAY_PRELOADED_TICKERS: Final = 1  # Displays all tickers loaded in program
     DISPLAY_VISIBLE_ENTRIES: Final = 3  # Allows user to display only certain assets
     DISPLAY_ALL_VISIBLE_ENTRIES: Final = 4  # Displays all loaded assets
     HIDE_ENTRIES: Final = 5  # Allows user to choose which assets they wish to hide
@@ -316,12 +310,12 @@ class Request:
     QUIT: Final = 11  # Terminate the program
 
     # Smallest int value of possible requests
-    _SMALLEST_VALUE: Final = DISPLAY_ALL_TICKERS
+    _SMALLEST_VALUE: Final = DISPLAY_PRELOADED_TICKERS
     _LARGEST_VALUE: Final = QUIT  # Largest int value of possible requests
 
     # dictionary of all valid requests mapped to their descriptions
     _VALID_REQUESTS: Final = {
-        DISPLAY_ALL_TICKERS: "display a list of all currently preloaded tickers",
+        DISPLAY_PRELOADED_TICKERS: "display a list of all currently preloaded tickers",
         HIDE_ENTRIES: "remove a ticker from the preloaded data",
         HIDE_ALL_ENTRIES: "remove all tickers from the preloaded data",
         PLOT: "create a chart from an asset in view",
@@ -330,7 +324,7 @@ class Request:
 
     # set of all requests which can function without an asset to act upon
     _STANDALONE_REQUESTS: Final = {
-        DISPLAY_ALL_TICKERS,
+        DISPLAY_PRELOADED_TICKERS,
         DISPLAY_ALL_VISIBLE_TICKERS,
         DISPLAY_ALL_VISIBLE_ENTRIES,
         HIDE_ALL_ENTRIES,

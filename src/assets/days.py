@@ -1,13 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-A library of some useful functions for calculating dates
-
-Created on Sun Apr 24 10:56:35 2022
-
-@author: Dylan Munro
-"""
-
-import pandas as pd
 JANUARY = 1
 FEBRUARY = 2
 MARCH = 3
