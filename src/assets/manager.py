@@ -99,13 +99,13 @@ class DataManager:
             self._all_entries.loc[self._all_entries.index ==
                                   i, "Percent Change"] = 0
 
-    def hide_all_entries(self):
+    def delete_all_entries(self):
         """
         Hides all entries from visible dataframe
         """
         self._visible_entries = pd.DataFrame()
 
-    def hide_entries(self, tickers):
+    def delete_entries(self, tickers):
         """
         Hides specified tickers from visible dataframe
 
@@ -233,19 +233,13 @@ class Driver:
             raise UserWarning("There are no visible entries")
         return self._manager.get_all_visible_entries()
 
-    def _get_price(self, request):
-        prices = []
-        for asset in request.get_assets():
-            prices.append(cg.get_price(ids=asset, vs_currencies="usd"))
-        return cg.get_price(ids=request.get_assets(), vs_currencies="usd")
-
     def _hide_entries(self, request):
-        self._manager.hide_entries(request.get_assets())
-        return " ".join([", ".join(request.get_assets()), "has been removed from the view"])
+        self._manager.delete_entries(request.get_assets())
+        return " ".join([", ".join(request.get_assets()), "has been removed from the preloaded assets"])
 
     def _hide_all_entries(self):
-        self._manager.hide_all_entries()
-        return "All assets have been removed from view"
+        self._manager.delete_all_entries()
+        return "All preloaded assets have been deleted"
 
     def _load_entries(self, request):
         self._manager.load_entries(request.get_assets())
@@ -302,8 +296,6 @@ class Driver:
             output = self._load_all_entries()
         elif choice == Request.PLOT_ASSETS:
             output = self._plot_assets(request)
-        elif choice == Request.PRICE:
-            output = self._get_price(request)
         elif choice == Request.QUIT:
             output = self._quit()
         return output
@@ -316,15 +308,11 @@ class Request:
 
     # Request Codes
     DISPLAY_ALL_TICKERS: Final = 1  # Displays all tickers loaded in program
-    DISPLAY_ALL_VISIBLE_TICKERS: Final = 2  # Displays all visible tickers
     DISPLAY_VISIBLE_ENTRIES: Final = 3  # Allows user to display only certain assets
     DISPLAY_ALL_VISIBLE_ENTRIES: Final = 4  # Displays all loaded assets
     HIDE_ENTRIES: Final = 5  # Allows user to choose which assets they wish to hide
     HIDE_ALL_ENTRIES: Final = 6  # Clears all assets from the active view
-    LOAD_ENTRIES: Final = 7  # Allows user to choose which assets they wish to load
-    LOAD_ALL_ENTRIES: Final = 8  # Loads all assets from spreadsheet into the active view
-    PLOT_ASSETS: Final = 9  # Creates plots of an asset
-    PRICE: Final = 10  # Obtains the price of an asset
+    PLOT: Final = 9  # Creates plots of an asset
     QUIT: Final = 11  # Terminate the program
 
     # Smallest int value of possible requests
@@ -333,16 +321,10 @@ class Request:
 
     # dictionary of all valid requests mapped to their descriptions
     _VALID_REQUESTS: Final = {
-        DISPLAY_ALL_TICKERS: "display a list of all tickers, including those hidden from view",
-        DISPLAY_ALL_VISIBLE_TICKERS: "display a list of all visible tickers",
-        DISPLAY_VISIBLE_ENTRIES: "display the entries of visible assets",
-        DISPLAY_ALL_VISIBLE_ENTRIES: "display the entries of all visible assets",
-        HIDE_ENTRIES: "hide assets from view",
-        HIDE_ALL_ENTRIES: "hide all assets from view",
-        LOAD_ENTRIES: "load hidden assets into view",
-        LOAD_ALL_ENTRIES: "load all hidden assets into view",
-        PLOT_ASSETS: "create a chart from an asset in view",
-        PRICE: "get the price of an asset in USD",
+        DISPLAY_ALL_TICKERS: "display a list of all currently preloaded tickers",
+        HIDE_ENTRIES: "remove a ticker from the preloaded data",
+        HIDE_ALL_ENTRIES: "remove all tickers from the preloaded data",
+        PLOT: "create a chart from an asset in view",
         QUIT: "terminate the program"
     }
 

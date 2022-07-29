@@ -70,7 +70,7 @@ class PriceGenerator:
         "dec": "12"
     }
 
-    def get_price(self, ticker, calculation_date, fiat_currency="cad", parse_date=True):
+    def get_price(self, ticker, calculation_date, currency="cad", parse_date=True):
         """
         Obtains the daily opening price of a cryptocurrency for any day
         If the ticker is not loaded into the program, the program terminates
@@ -86,12 +86,12 @@ class PriceGenerator:
             calculation_date = self._format_date(calculation_date)
         print("Ticker: {}".format(ticker))
         if ticker.lower() in PriceGenerator._NATIONAL_CURRENCIES:
-            return self._get_national_currency_price(ticker, calculation_date, fiat_currency)
+            return self._get_national_currency_price(ticker, calculation_date, currency)
         coingecko_id = PriceGenerator._TICKERS_TO_COINGECKO_ID.get(
             ticker.lower())
         coin_data = cg.get_coin_history_by_id(
             id=coingecko_id, date=calculation_date, localization=False)
-        price = coin_data["market_data"]["current_price"][fiat_currency]
+        price = coin_data["market_data"]["current_price"][currency]
         # Pause for 1.5 seconds to stay within coingecko rate limit of 50 calls/minute
         time.sleep(1.5)
         return price
